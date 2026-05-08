@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🍑 Peach Town — Camilla's 30th</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3a2415;background:#4a8aaa}
+#map{position:fixed;inset:0;z-index:1}
+.leaflet-container{background:#7ecfcf;cursor:grab}
+.leaflet-container:active{cursor:grabbing}
+.leaflet-control-zoom a{font-family:'Nunito',sans-serif!important;font-weight:900!important;color:#3a2415!important;background:#f5ead0!important}
+.leaflet-control-zoom{border:2px solid #8b6343!important;border-radius:6px!important;box-shadow:2px 2px 0 #5a3e26!important}
+
+
+/* toast */
+@keyframes slideDown{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pop{0%{transform:scale(0) rotate(-6deg);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+#toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:1000;background:#f5ead0;border:3px solid #8b6343;border-radius:12px;padding:10px 14px;max-width:320px;width:calc(100vw - 28px);box-shadow:4px 4px 0 #5a3e26;display:none;gap:10px;align-items:flex-start;animation:slideDown .3s ease}
+#toast.show{display:flex}
+#ti{font-size:26px;flex-shrink:0;animation:bob 2s ease-in-out infinite}
+#tt{font-family:'Libre Baskerville',serif;font-style:italic;font-size:12px;line-height:1.6;color:#5a3e26}
+
+/* pins */
+.sp{display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.pb{background:#f5ead0;border:2.5px solid #7d5a3c;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:900;white-space:nowrap;box-shadow:2px 2px 0 #5a3e26;color:#3a2415;font-family:'Nunito',sans-serif;transition:transform .3s}
+.ps{width:2px;height:6px;background:#7d5a3c}
+.pd{width:8px;height:8px;border-radius:50%;background:#e67e22;border:2px solid #5a3e26}
+.sp.lit .pb{background:#fff8e8;animation:pop .4s ease both}
+.sp.lit .pd{background:#e74c3c}
+.hp{display:flex;flex-direction:column;align-items:center;animation:bob 2.8s ease-in-out infinite}
+.hb{background:#e67e22;border:2px solid #3a2415;border-radius:6px;padding:2px 9px;font-size:10px;font-weight:900;color:white;box-shadow:2px 2px 0 #3a2415;white-space:nowrap;font-family:'Nunito',sans-serif}
+.hs{width:2px;height:5px;background:#3a2415}
+.hd{width:7px;height:7px;border-radius:50%;background:#e67e22;border:1.5px solid #3a2415}
+
+/* panel */
+#panel{position:fixed;bottom:0;left:0;right:0;z-index:500;background:#f5ead0;border-top:3px solid #8b6343;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.28);display:flex;flex-direction:column;max-height:78vh;transform:translateY(calc(100% - 64px));transition:transform .35s cubic-bezier(.34,1.2,.64,1)}
+#panel.open{transform:translateY(0)}
+#ph{padding:10px 16px 8px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;-webkit-user-select:none;flex-shrink:0;position:relative}
+#nub{width:36px;height:4px;background:#c8b098;border-radius:2px;position:absolute;top:7px;left:50%;transform:translateX(-50%)}
+#pw{flex:1}
+#pl{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#8a6a4a;margin-bottom:3px}
+#pt{height:12px;background:#d4c0a0;border:2px solid #8b6343;border-radius:20px;overflow:hidden}
+#pf{height:100%;background:linear-gradient(90deg,#76b041,#4a7c2f);border-radius:20px;width:0%;transition:width .6s cubic-bezier(.34,1.4,.64,1)}
+#pn{font-size:10px;font-weight:700;color:#7a5a38;margin-top:2px}
+#pa{font-size:16px;color:#8b6343;flex-shrink:0}
+#pb{overflow-y:auto;padding:0 12px 36px;-webkit-overflow-scrolling:touch;flex:1}
+
+/* cards */
+.sc{background:#fff9f0;border:2.5px solid #8b6343;border-radius:12px;margin-bottom:8px;overflow:hidden;box-shadow:3px 3px 0 #8b6343;animation:fadeUp .3s ease both}
+.sc.done{background:#f0f8e8;border-color:#4a7c2f;box-shadow:3px 3px 0 #4a7c2f}
+.ch{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.cb{width:24px;height:24px;flex-shrink:0;border:2.5px solid #8b6343;border-radius:5px;background:white;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sc.done .cb{background:#76b041;border-color:#4a7c2f}
+.ci{width:32px;height:32px;flex-shrink:0;background:#f0e8d0;border:2px solid #8b6343;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px}
+.sc.done .ci{background:#ffd080}
+.cn{font-size:13px;font-weight:800;color:#3a2415;line-height:1.2}
+.ct{font-size:9px;color:#8a6a4a;font-weight:700;margin-top:1px}
+.sc.done .cn{color:#4a7c2f}
+.cv{font-size:10px;color:#a08060;transition:transform .3s;flex-shrink:0}
+.sc.open .cv{transform:rotate(180deg)}
+.cd{max-height:0;overflow:hidden;transition:max-height .32s ease}
+.sc.open .cd{max-height:460px;border-top:2px solid #e8d8b8}
+.cdi{padding:11px 13px 13px}
+.cdesc{font-family:'Libre Baskerville',serif;font-style:italic;font-size:12px;line-height:1.65;color:#7a5a3c;margin-bottom:10px}
+.tb{background:#fff9c4;border:2px solid #8b6343;border-radius:7px;padding:9px 11px;margin-bottom:9px}
+.tl{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#5a3e26;margin-bottom:3px}
+.tx{font-size:11.5px;font-weight:700;color:#3a2415;line-height:1.5}
+.gb{width:100%;padding:9px;background:#76b041;color:white;border:2px solid #3a2415;border-radius:7px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:background .15s}
+.gb:hover,.gb:active{background:#4a7c2f}
+.sc.done .gb{background:#a08060;cursor:default}
+.um{display:none;background:#e8f5d0;border:2px solid #4a7c2f;border-radius:7px;padding:7px 10px;margin-top:8px;font-size:11px;font-weight:800;color:#3a5020;text-align:center}
+.sc.done .um{display:block;animation:pop .4s ease}
+#cb{display:none;margin:12px 0 8px;background:#6a3a18;border:3px solid #ffd080;border-radius:12px;padding:18px;text-align:center;box-shadow:0 4px 0 #3a2415}
+#cb.show{display:block;animation:pop .5s ease}
+#cb h2{font-size:20px;font-weight:900;color:#f5e8c8;margin-bottom:4px}
+#cb p{font-size:12px;font-style:italic;color:#d4b896;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+
+<!-- toast -->
+<div id="toast"><div id="ti">🌿</div><div id="tt"></div></div>
+
+<!-- panel -->
+<div id="panel">
+  <div id="ph" onclick="togglePanel()">
+    <div id="nub"></div>
+    <div id="pw">
+      <div id="pl">✨ peach town explored</div>
+      <div id="pt"><div id="pf"></div></div>
+      <div id="pn">0 / 7 stops visited</div>
+    </div>
+    <div id="pa">▲</div>
+  </div>
+  <div id="pb">
+    <div id="cb"><div style="font-size:22px;letter-spacing:6px;margin-bottom:8px">✨🍑✨</div><h2>map complete!!</h2><p>what a wonderful day you've had!<br>this town is so lucky to have you in it.<br>happy 30th birthday, camilla!! 🌿</p></div>
+    <div id="cl"></div>
+  </div>
+</div>
+
+<canvas id="c" style="display:none"></canvas>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const STOPS=[
+  {id:0,icon:'🌅',name:'Peaceful Waters',tag:'🚗 10 min drive south · willard bay',desc:'oh, you haven\'t been to willard bay yet?! it\'s just a short drive south of town! the water is so calm and clear in the morning, and all sorts of birds come to visit. it\'s been here your whole time in town and i think it\'s been waiting for you to come say hello!',task:'📍 APPROACH the water\'s edge. SPEAK ALOUD one thing you\'re leaving behind in your 20s. The herons have a 5-star discretion rating.',unlock:'🔓 peaceful waters has been added to your map!'},
+  {id:1,icon:'🚂',name:'The Old Train Station',tag:'🚶 walkable · forest st · open fri 2–6pm',desc:'wow, this building has been here since 1907! back in the old days, the whole town would bring their peaches and cherries here to be loaded onto trains and sent all over the country. the trains don\'t stop here anymore, but the building is still just as lovely. i think the history is kind of soaked into the walls!',task:'🔍 SEARCH the depot for one thing that surprises you. EXAMINE it. PHOTOGRAPH it. Explorers who skip this step lose 50 XP.',unlock:'🔓 the train depot has been added to your map!'},
+  {id:2,icon:'🔍',name:'The Secret in the Wall',tag:'🚶 walkable · main street',desc:'there\'s a plaque on main street marking where the old cooperative store used to be, but if you look very carefully at the brickwork right next to it, you can still see the outline of the original building! it\'s been gone for over a hundred years but it\'s still kind of... there! like a little ghost!',task:'👁️ LOCATE the ghost outline hidden in the brickwork — it\'s been hiding in plain sight for 100+ years. PHOTOGRAPH the evidence before it vanishes.',unlock:'🔓 the secret in the wall has been added to your map!'},
+  {id:3,icon:'🏛️',name:'The Museum With 12,000 Things In It',tag:'🚶 walkable · forest street · free',desc:'did you know we have a museum right here on forest street?! and it\'s completely free! it has fossils and crystals and pioneer artifacts and a room that glows under black light. it\'s in an old school building and some of the things inside have just been sitting there quietly for a hundred and fifty years!',task:'🏺 FIND the one exhibit that gives you a feeling you can\'t name. STAND before it for a full 60 seconds. PHOTOGRAPH it. No caption required.',unlock:'🔓 the museum has been added to your map!'},
+  {id:4,icon:'🦆',name:'The Duck Pond',tag:'🚶 walkable · forest street · rees pioneer park',desc:'rees pioneer park is one of my very favorite spots in town! there\'s a little bridge and a fountain and ducks who are very friendly if you approach them calmly. residents have been sitting on these benches since before utah was even a state, which i find very comforting somehow!',task:'🦆 SIT on a bench. OPEN your notes app. WRITE 3 things you genuinely want to do this summer (wants, not shoulds). Screenshot = officially unlocked.',unlock:'🔓 the duck pond has been added to your map!'},
+  {id:5,icon:'⭐',name:'The Big Glowing Arch',tag:'🚶 walkable · main street',desc:'the gateway arch has three hundred and fifty light bulbs in it! the townspeople paid for it themselves back in 1908 because they wanted main street to glow, which i think is just the loveliest reason to do something. it still lights up! you\'ve probably walked right under it without really looking! today you should look!',task:'⭐ STAND directly beneath the arch. LOOK UP. SUMMON a party member to photograph you with your flowers. This is the birthday cutscene.',unlock:'🔓 the arch has been added to your map!'},
+  {id:6,icon:'🎱',name:'The Tavern — You Made It!!',tag:'🚶 walkable · 21 w forest st',desc:'oh, b&b billiards!! did you know it\'s been here since 1903?! that\'s older than the arch and older than the train station! it has seen every single kind of night this town has ever had, and tonight it gets to see yours! you explored your whole town today! you found things most residents never look for!',task:'🎱 FINAL BOSS UNLOCKED. When asked your age tonight: say THIRTY. No hesitation. Full confidence. Then order whatever you want. You\'ve cleared the map.',unlock:'🔓 b&b billiards has been added to your map! 🎉'},
+];
+
+// ─────────────────────────────────────────────
+// CANVAS — verbatim from peach-town-map.html
+// with the 7 stop buildings swapped in
+// ─────────────────────────────────────────────
+const W=800,H=760;
+const cv=document.getElementById('c');
+cv.width=W*2;cv.height=H*2; // 2x for retina
+const g=cv.getContext('2d');
+g.scale(2,2);
+
+function px(fx){return fx*W}
+function py(fy){return fy*H}
+function rnd(a,b){return a+Math.random()*(b-a)}
+
+// street positions — exactly as in peach-town-map.html
+const xMain=px(0.730),x100E=px(0.818),x200E=px(0.905);
+const xPark=px(0.040),x600W=px(0.165);
+const x500W_btm=px(0.265),x500W_900N=px(0.205),x500W_800N=px(0.230),x500W_750N=px(0.250);
+const x400W=px(0.375),x300W=px(0.463),x200W=px(0.555),x100W=px(0.600);
+const y900N=py(0.145),y800N=py(0.228),y750N=py(0.278),y700N=py(0.368);
+const y650N=py(0.415),y600N=py(0.500),yForestSt=py(0.610);
+const y500N=py(0.610); // alias for yForestSt — used in street drawing
+const y400N=py(0.735),y325N=py(0.815),y300N=py(0.865);
+
+// stop canvas positions [x,y] matching peach-town-map layout
+const SXY=[
+  [px(0.40),H-10],           // 0 Willard Bay (south edge)
+  [x100E,yForestSt],         // 1 Train Depot
+  [xMain,yForestSt+46],      // 2 Co-op ghost
+  [x300W,yForestSt],         // 3 Museum
+  [x100E+24,yForestSt+20],   // 4 Rees Park
+  [xMain,y600N+py(0.06)],    // 5 Arch (matches peach-town-map archY)
+  [x300W+40,yForestSt],      // 6 B&B Billiards
+];
+
+function circle(x,y,r,col,alpha=1){g.save();g.globalAlpha=alpha;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fillStyle=col;g.fill();g.restore()}
+function rrect(x,y,w,h,r,col,alpha=1){g.save();g.globalAlpha=alpha;g.beginPath();g.roundRect(x,y,w,h,r);g.fillStyle=col;g.fill();g.restore()}
+function poly(pts,col,alpha=1){g.save();g.globalAlpha=alpha;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(([x,y])=>g.lineTo(x,y));g.closePath();g.fillStyle=col;g.fill();g.restore()}
+function lbl(txt,x,y,sz=9,col='#3a2415',align='center'){g.save();g.font=`800 ${sz}px 'Nunito',Arial,sans-serif`;g.textAlign=align;g.textBaseline='middle';g.shadowColor='rgba(255,255,255,0.9)';g.shadowBlur=4;g.fillStyle=col;g.fillText(txt,x,y);g.restore()}
+
+function tree(x,y,s=1,c1='#58a028',c2='#3a8018',c3='#78c040'){
+  g.save();g.globalAlpha=0.12;g.beginPath();g.ellipse(x+3*s,y+8*s,12*s,4*s,0,0,Math.PI*2);g.fillStyle='#000';g.fill();g.restore();
+  rrect(x-2.5*s,y+1*s,5*s,8*s,1,'#8b5e3c');
+  circle(x,y-2*s,12*s,c2);circle(x-6*s,y,8*s,c1);circle(x+6*s,y,8*s,c1);
+  circle(x,y-8*s,10*s,c3);circle(x,y-3*s,9*s,c1);
+  circle(x-2*s,y-7*s,3.5*s,'rgba(255,255,255,0.18)');
+}
+function peachTree(x,y,s=1){
+  tree(x,y,s,'#68a830','#489018','#7ab840');
+  [[0,-4],[5,-1],[-4,0],[2,3],[-3,-7]].forEach(([dx,dy])=>circle(x+dx*s,y+dy*s,2.2*s,'#f49040'));
+}
+function bush(x,y,s=1){circle(x,y,6*s,'#60a020');circle(x-3.5*s,y+2*s,4.5*s,'#509018');circle(x+3.5*s,y+2*s,4.5*s,'#509018');circle(x,y-2.5*s,5*s,'#78b830')}
+function flower(x,y,col='#f4d030'){for(let i=0;i<5;i++){const a=i/5*Math.PI*2;circle(x+Math.cos(a)*3,y+Math.sin(a)*3,2.2,col)}circle(x,y,1.5,'#fffbe0')}
+function mushroom(x,y,s=1){rrect(x-1.5*s,y,3*s,5*s,1,'#ddd0b0');g.beginPath();g.arc(x,y,5*s,Math.PI,0);g.fillStyle='#e04030';g.fill();circle(x-1.8*s,y-2*s,1.2*s,'rgba(255,255,255,0.7)')}
+function building(x,y,w,h,roofCol,wallCol='#f0e8d0',wins=true,doorCol='#8a6840'){
+  g.save();g.globalAlpha=0.12;g.beginPath();g.ellipse(x+w/2+3,y+h+4,w/2+2,5,0,0,Math.PI*2);g.fillStyle='#000';g.fill();g.restore();
+  rrect(x,y,w,h,2,wallCol);rrect(x-2,y-8,w+4,10,2,roofCol);
+  g.beginPath();g.moveTo(x+3,y-3);g.lineTo(x+w-3,y-3);g.strokeStyle='rgba(0,0,0,0.15)';g.lineWidth=1;g.stroke();
+  if(wins){rrect(x+3,y+3,6,6,1,'#90c8d8');if(w>22)rrect(x+w-9,y+3,6,6,1,'#90c8d8')}
+  g.beginPath();g.roundRect(x+w/2-3,y+h-10,6,10,1);g.fillStyle=doorCol;g.fill();
+}
+function stones(cx,cy,r,n=10){for(let i=0;i<n;i++){const a=i/n*Math.PI*2-Math.PI/2,bx=cx+Math.cos(a)*r,by=cy+Math.sin(a)*r,rr=rnd(5,8);g.save();g.globalAlpha=0.82;g.beginPath();g.ellipse(bx,by,rr,rr*0.65,0,0,Math.PI*2);g.fillStyle='#c8b888';g.fill();g.restore()}}
+
+function drawMap(){
+// 1. TEAL WATER
+g.fillStyle='#7ecfcf';g.fillRect(0,0,W,H);
+g.save();g.strokeStyle='#a8e4e4';g.lineWidth=1.5;g.globalAlpha=0.3;
+for(let i=0;i<W;i+=20){g.beginPath();g.moveTo(i,0);g.bezierCurveTo(i+5,H*0.3,i-5,H*0.6,i+3,H);g.stroke()}
+g.restore();
+
+// 2. GREAT SALT LAKE
+g.save();g.beginPath();g.moveTo(0,0);g.lineTo(px(0.06),0);
+g.bezierCurveTo(px(0.08),H*0.2,px(0.04),H*0.4,px(0.07),H*0.6);
+g.bezierCurveTo(px(0.05),H*0.8,px(0.07),H*0.9,px(0.05),H);
+g.lineTo(0,H);g.closePath();g.fillStyle='#68c4d0';g.fill();
+g.strokeStyle='#a0dcec';g.lineWidth=1.5;g.globalAlpha=0.45;
+for(let ly=30;ly<H;ly+=22){g.beginPath();g.moveTo(0,ly);g.bezierCurveTo(18,ly-2,36,ly+2,54,ly);g.stroke()}
+g.restore();
+for(let i=0;i<10;i++){const mx=rnd(px(0.06),px(0.10)),my=rnd(80,H-120);g.fillStyle='#5a9030';g.fillRect(mx,my,2.5,10);g.fillRect(mx+5,my+3,2,7)}
+lbl('Great Salt\nLake',px(0.03),H/2-10,7,'#1a7080');
+lbl('🦆',px(0.03),H/2+8,13,'#1a7080');
+
+// 3. LANDMASS
+g.save();g.beginPath();
+g.moveTo(px(0.09),py(0.08));
+g.bezierCurveTo(px(0.20),py(0.06),px(0.40),py(0.05),px(0.60),py(0.06));
+g.bezierCurveTo(px(0.68),py(0.06),px(0.72),py(0.07),px(0.74),py(0.08));
+g.bezierCurveTo(px(0.78),py(0.08),px(0.84),py(0.09),px(0.88),py(0.12));
+g.bezierCurveTo(px(0.92),py(0.15),px(0.90),py(0.25),px(0.92),py(0.35));
+g.bezierCurveTo(px(0.93),py(0.45),px(0.91),py(0.55),px(0.93),py(0.65));
+g.bezierCurveTo(px(0.93),py(0.75),px(0.91),py(0.85),px(0.90),py(0.95));
+g.bezierCurveTo(px(0.80),py(0.97),px(0.60),py(0.98),px(0.50),py(0.97));
+g.bezierCurveTo(px(0.35),py(0.98),px(0.20),py(0.97),px(0.12),py(0.95));
+g.bezierCurveTo(px(0.09),py(0.88),px(0.08),py(0.75),px(0.09),py(0.62));
+g.bezierCurveTo(px(0.09),py(0.50),px(0.08),py(0.38),px(0.09),py(0.25));
+g.bezierCurveTo(px(0.09),py(0.16),px(0.09),py(0.10),px(0.09),py(0.08));
+g.closePath();
+g.fillStyle='#a8cc68';g.fill();
+g.strokeStyle='#d8c880';g.lineWidth=10;g.stroke();
+g.strokeStyle='#c8b868';g.lineWidth=3;g.stroke();
+g.restore();
+[[px(0.25),py(0.28),100,75,'#98bc58',0.25],[px(0.55),py(0.50),85,65,'#98b450',0.2],[px(0.40),py(0.70),90,60,'#b4d068',0.18],[px(0.20),py(0.60),70,50,'#98bc58',0.18],[px(0.65),py(0.30),75,55,'#b4d068',0.18]].forEach(([cx,cy,rx,ry,col,a])=>{g.save();g.globalAlpha=a;g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.fillStyle=col;g.fill();g.restore()});
+
+// 4. MOUNTAINS — illustrated AC style
+// base fill
+g.fillStyle='#8aaa54';g.fillRect(px(0.88),0,W,H);
+g.fillStyle='#96b660';g.fillRect(px(0.92),0,W,H);
+
+function mtn(cx,tipY,hw){
+  // left face (lighter)
+  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx-hw,Math.min(tipY+hw*4,H+20));g.lineTo(cx,Math.min(tipY+hw*2.2,H+20));g.closePath();g.fillStyle='#9cb864';g.fill();
+  // right face (darker)
+  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx+hw,Math.min(tipY+hw*4,H+20));g.lineTo(cx,Math.min(tipY+hw*2.2,H+20));g.closePath();g.fillStyle='#7a9844';g.fill();
+  // centre ridge
+  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx-hw*.08,Math.min(tipY+hw*4,H+20));g.lineTo(cx+hw*.08,Math.min(tipY+hw*4,H+20));g.closePath();g.fillStyle='#88aa50';g.fill();
+  // snow cap
+  const sB=tipY+hw*.6;
+  g.beginPath();g.moveTo(cx,tipY-3);
+  g.bezierCurveTo(cx+hw*.28,tipY+hw*.12,cx+hw*.24,sB,cx+hw*.14,sB+5);
+  g.lineTo(cx-hw*.14,sB+5);
+  g.bezierCurveTo(cx-hw*.24,sB,cx-hw*.28,tipY+hw*.12,cx,tipY-3);
+  g.closePath();g.fillStyle='rgba(255,255,255,.84)';g.fill();
+  // snow highlight
+  g.beginPath();g.moveTo(cx,tipY-3);g.bezierCurveTo(cx-hw*.08,tipY+hw*.08,cx-hw*.1,tipY+hw*.22,cx-hw*.06,tipY+hw*.28);g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=2;g.stroke();
+}
+
+// back row — smaller, offset right
+[[px(0.95),py(0.10),18],[px(0.95),py(0.30),17],[px(0.95),py(0.50),18],[px(0.95),py(0.70),17],[px(0.95),py(0.88),16]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
+// front row — taller, along left edge of mountain zone
+[[px(0.91)+4,py(0.02),26],[px(0.91)+2,py(0.20),28],[px(0.91)+5,py(0.38),26],[px(0.91)+3,py(0.56),27],[px(0.91)+4,py(0.74),25],[px(0.91)+2,py(0.90),22]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
+
+lbl('Wellsville\nMtns',px(0.965),H/2,7.5,'#3a5820');
+
+// 5. WILLARD BAY
+g.save();g.beginPath();g.ellipse(px(0.40),H+16,px(0.22),28,-0.05,0,Math.PI*2);g.fillStyle='#68c4d0';g.fill();g.strokeStyle='#c8f0f8';g.lineWidth=8;g.stroke();g.globalAlpha=0.5;g.strokeStyle='#a0d8e8';g.lineWidth=3;g.stroke();
+for(let i=0;i<4;i++){g.beginPath();g.moveTo(px(0.22)+i*20,H-18);g.bezierCurveTo(px(0.28)+i*18,H-21,px(0.34)+i*16,H-15,px(0.40)+i*14,H-18);g.stroke()}
+g.restore();lbl('🎣 Willard Bay',px(0.40),H-6,8,'#1a7080');
+
+// 6. I-15
+g.save();g.beginPath();g.moveTo(px(0.09),py(0.07));g.lineTo(px(0.09),py(0.96));g.strokeStyle='#9a9880';g.lineWidth=10;g.lineCap='round';g.stroke();g.strokeStyle='#e0d8c0';g.lineWidth=2.5;g.setLineDash([12,8]);g.stroke();g.setLineDash([]);g.restore();
+rrect(px(0.09)-12,H/2-9,24,18,3,'#3060a0');lbl('15',px(0.09),H/2+1,8,'white');
+
+// 7. HWY 13
+g.save();g.beginPath();g.moveTo(px(0.92),py(0.08));g.bezierCurveTo(px(0.86),py(0.10),px(0.82),py(0.12),px(0.76),py(0.13));g.bezierCurveTo(px(0.75),py(0.13),xMain,py(0.14),xMain,y900N);g.strokeStyle='#c0a870';g.lineWidth=9;g.lineCap='round';g.stroke();g.strokeStyle='#e8d8a8';g.lineWidth=2.5;g.setLineDash([9,6]);g.stroke();g.setLineDash([]);g.restore();
+g.save();g.globalAlpha=0.55;g.beginPath();g.ellipse(px(0.84),py(0.08),36,20,0,0,Math.PI*2);g.fillStyle='#68a830';g.fill();g.restore();
+lbl('golf',px(0.84),py(0.08),6,'#3a5010');lbl('Hwy 13',px(0.86),py(0.115),6.5,'#5a4020');
+
+// 8. STREETS
+function sH(y2,w=5,col='#c8b070'){g.save();g.beginPath();g.moveTo(px(0.09),y2);g.lineTo(px(0.92),y2);g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.stroke();g.restore()}
+function sV(x2,yFrom,yTo,w=5,col='#c8b070'){g.save();g.beginPath();g.moveTo(x2,yFrom);g.lineTo(x2,yTo);g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.stroke();g.restore()}
+sH(y900N,5,'#c0a868');sH(y800N,5,'#c0a868');sH(y750N,4);sH(y700N,5,'#c0a868');
+g.save();g.beginPath();g.moveTo(x500W_btm,y650N);g.lineTo(px(0.92),y650N);g.strokeStyle='#c8b070';g.lineWidth=4;g.stroke();g.restore();
+sH(y600N,5,'#c0a868');sH(y500N,6,'#b8a060');sH(y400N,5,'#c0a868');sH(y325N,4);sH(y300N,5,'#c0a868');
+g.save();g.beginPath();g.moveTo(xPark,y600N+10);g.bezierCurveTo(xPark,y500N||yForestSt,xPark-5,y400N,xPark,y300N);g.strokeStyle='#c8b070';g.lineWidth=4;g.lineCap='round';g.stroke();g.restore();
+sV(x600W,y900N,y300N,4);
+g.save();g.beginPath();g.moveTo(x500W_btm,py(0.96));g.lineTo(x500W_btm,y700N+10);g.bezierCurveTo(x500W_btm,y700N-10,x500W_750N,y750N,x500W_750N,y750N);g.bezierCurveTo(x500W_750N,y750N-5,x500W_800N,y800N-5,x500W_800N,y800N-5);g.bezierCurveTo(x500W_800N,y800N-15,x500W_900N,y900N,x500W_900N,y900N-5);g.bezierCurveTo(x500W_900N,py(0.07),px(0.215),py(0.06),px(0.22),py(0.07));g.strokeStyle='#c0a868';g.lineWidth=7;g.lineCap='round';g.stroke();g.restore();
+g.save();g.beginPath();g.moveTo(px(0.555),y750N);g.lineTo(px(0.555),y900N+5);g.strokeStyle='#c8b070';g.lineWidth=4;g.stroke();g.moveTo(px(0.555),py(0.185));g.lineTo(px(0.64),py(0.185));g.stroke();g.restore();
+sV(x400W,py(0.07),py(0.96),5,'#c0a868');sV(x300W,py(0.07),py(0.96),5,'#c0a868');sV(x100W,py(0.07),py(0.96),5,'#c0a868');
+sV(x100E,y700N,py(0.96),5,'#c0a868');sV(x200E,y600N,py(0.96),4);
+
+// forest st + main st
+g.save();g.beginPath();g.moveTo(px(0.09),yForestSt);g.lineTo(px(0.92),yForestSt);g.strokeStyle='#a89050';g.lineWidth=13;g.lineCap='round';g.stroke();g.strokeStyle='#dcc888';g.lineWidth=5;g.stroke();g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=1.5;g.setLineDash([10,8]);g.stroke();g.setLineDash([]);g.restore();
+g.save();g.beginPath();g.moveTo(xMain,py(0.07));g.lineTo(xMain,py(0.96));g.strokeStyle='#a89050';g.lineWidth=13;g.lineCap='round';g.stroke();g.strokeStyle='#dcc888';g.lineWidth=5;g.stroke();g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=1.5;g.setLineDash([10,8]);g.stroke();g.setLineDash([]);g.restore();
+
+// 9. BOX ELDER CREEK — enters east ~300-400N, flows WNW, exits west ~500N
+g.save();g.beginPath();
+g.moveTo(px(0.93),py(0.640));
+g.bezierCurveTo(px(0.88),py(0.642),px(0.85),py(0.645),px(0.818),py(0.650));
+g.bezierCurveTo(px(0.78),py(0.655),px(0.75),py(0.658),xMain,py(0.662));
+g.bezierCurveTo(px(0.70),py(0.665),px(0.65),py(0.663),px(0.60),py(0.660));
+g.bezierCurveTo(px(0.50),py(0.655),px(0.40),py(0.650),px(0.30),py(0.645));
+g.bezierCurveTo(px(0.20),py(0.640),px(0.14),py(0.638),px(0.09),py(0.636));
+g.strokeStyle='#60b0c8';g.lineWidth=9;g.lineCap='round';g.stroke();
+g.strokeStyle='#a8dcea';g.lineWidth=3.5;g.globalAlpha=0.65;g.stroke();
+g.globalAlpha=0.3;g.strokeStyle='#d8f2fc';g.lineWidth=1.5;g.stroke();
+g.restore();lbl('Box Elder Creek',px(0.62),py(0.625),6,'#1a7080');
+
+// 10. STONE INTERSECTION + SNOW PARK
+stones(xMain,yForestSt,34,12);
+rrect(xMain+5,yForestSt-11,26,20,3,'#70a830');
+g.save();g.strokeStyle='#509020';g.lineWidth=1.5;g.beginPath();g.roundRect(xMain+5,yForestSt-11,26,20,3);g.stroke();g.restore();
+lbl('snow\npark',xMain+18,yForestSt+14,5.5,'#3a5010');
+
+// 11. ORCHARD
+g.save();g.beginPath();g.ellipse(px(0.17),py(0.25),70,55,0,0,Math.PI*2);g.fillStyle='#80b840';g.globalAlpha=0.45;g.fill();g.restore();
+[[px(0.12),py(0.17)],[px(0.16),py(0.16)],[px(0.20),py(0.17)],[px(0.24),py(0.16)],[px(0.12),py(0.22)],[px(0.16),py(0.21)],[px(0.20),py(0.22)],[px(0.24),py(0.21)],[px(0.28),py(0.22)],[px(0.13),py(0.27)],[px(0.17),py(0.26)],[px(0.21),py(0.27)],[px(0.25),py(0.26)],[px(0.14),py(0.32)],[px(0.18),py(0.31)],[px(0.22),py(0.32)],[px(0.26),py(0.31)]].forEach(([tx,ty])=>peachTree(tx,ty,0.50));
+lbl('🍑 orchards',px(0.17),py(0.36),7,'#3a5010');
+
+// 12. BUILDINGS (verbatim from peach-town-map, stop buildings replaced)
+// Temple
+building(xMain+8,y700N-14,28,22,'#c8c090','#f0e8d0',true,'#8a6840');
+g.fillStyle='#b8a870';g.fillRect(xMain+20,y700N-24,4,12);
+poly([[xMain+22,y700N-28],[xMain+16,y700N-12],[xMain+28,y700N-12]],'#c8b880');
+lbl('temple',xMain+22,y700N+16,7,'#5a3e26');
+
+// Tabernacle
+building(x100W-14,y700N-12,26,20,'#8aaa60','#eee8d8',true,'#6a8a40');
+g.fillStyle='#7a9a50';g.fillRect(x100W-2,y700N-22,4,12);circle(x100W,y700N-24,4,'#8aaa60');
+lbl('tabernacle',x100W,y700N+16,7,'#5a3e26');
+
+// Train Depot — stop 1
+building(x100E-18,yForestSt-16,36,26,'#c4a850','#dcc898',true,'#7a5830');
+rrect(x100E-20,yForestSt+8,40,7,1,'#b8a870');
+g.save();g.strokeStyle='#8a6840';g.lineWidth=2;g.globalAlpha=0.38;g.beginPath();g.moveTo(x100E-20,yForestSt+13);g.lineTo(x100E+20,yForestSt+13);g.moveTo(x100E-20,yForestSt+16);g.lineTo(x100E+20,yForestSt+16);g.stroke();g.restore();
+lbl('🚂 depot',x100E,yForestSt+24,7,'#5a3e26');
+
+// Museum — stop 3
+building(x300W-16,yForestSt-14,32,24,'#7aaa50','#d8ecb8',true,'#5a7a30');
+g.save();g.strokeStyle='#b0dc98';g.lineWidth=2;g.globalAlpha=0.4;[-10,-2,6,14].forEach(dx=>{g.beginPath();g.moveTo(x300W+dx,yForestSt-14);g.lineTo(x300W+dx,yForestSt+10);g.stroke()});g.restore();
+lbl('🏛️ museum',x300W,yForestSt+18,7,'#5a3e26');
+
+// Courthouse
+building(xMain+6,y400N-12,36,24,'#c8b880','#ecdcbc',true,'#7a5830');
+g.save();g.strokeStyle='#c8b898';g.lineWidth=2;g.globalAlpha=0.38;[-8,0,8,16].forEach(dx=>{g.beginPath();g.moveTo(xMain+6+14+dx,y400N-12);g.lineTo(xMain+6+14+dx,y400N+12);g.stroke()});g.restore();
+lbl('courthouse',xMain+24,y400N+18,7,'#5a3e26');
+
+// B&B Billiards — stop 6
+building(x300W+30,yForestSt-12,20,18,'#8858a8','#ceb0d8',false,'#5a3878');
+g.save();g.globalAlpha=0.18;g.beginPath();g.ellipse(x300W+40,yForestSt-12,12,3,0,0,Math.PI*2);g.fillStyle='#c090e0';g.fill();g.restore();
+lbl('🎱 B&B',x300W+40,yForestSt+13,7,'#5a3e26');
+
+// Rees Pioneer Park — stop 4
+g.save();g.beginPath();g.ellipse(x100E+24,yForestSt+20,34,25,0,0,Math.PI*2);g.fillStyle='#70b030';g.fill();g.beginPath();g.ellipse(x100E+24,yForestSt+22,14,9,0,0,Math.PI*2);g.fillStyle='#68c4d0';g.fill();g.globalAlpha=0.35;g.beginPath();g.ellipse(x100E+24,yForestSt+22,10,6,0,0,Math.PI*2);g.fillStyle='#a0dce8';g.fill();g.restore();
+rrect(x100E+17,yForestSt+18,14,5,1,'#c8a870',0.75);
+tree(x100E+4,yForestSt+8,0.5,'#58a028','#409020','#78b840');tree(x100E+44,yForestSt+8,0.45,'#509028','#388018','#68b038');
+lbl('🦆 rees pk',x100E+24,yForestSt+50,7,'#3a5010');
+
+// Arch — stop 5
+const archY=y600N+py(0.06);
+g.save();g.beginPath();g.arc(xMain,archY,17,Math.PI,0);g.strokeStyle='#d4a030';g.lineWidth=4;g.stroke();g.beginPath();g.moveTo(xMain-17,archY);g.lineTo(xMain-17,archY+10);g.moveTo(xMain+17,archY);g.lineTo(xMain+17,archY+10);g.strokeStyle='#d4a030';g.lineWidth=3;g.stroke();
+[0.15,0.35,0.5,0.65,0.85].forEach(t=>{const a=Math.PI+t*Math.PI,bx=xMain+Math.cos(a)*17,by=archY+Math.sin(a)*17;circle(bx,by,2.5,'#ffe060');circle(bx,by,1.5,'#fff8a0');g.save();g.globalAlpha=0.18;circle(bx,by,5,'#ffe060');g.restore()});
+g.restore();lbl('⭐ the arch',xMain,archY-10,7,'#9a7020');
+
+// Co-op plaque — stop 2
+rrect(xMain-4,yForestSt+40,10,8,1,'#c8a050');
+g.save();g.strokeStyle='#8a6030';g.lineWidth=1.5;g.beginPath();g.roundRect(xMain-4,yForestSt+40,10,8,1);g.stroke();g.restore();
+lbl('🔍 co-op',xMain,yForestSt+57,6,'#5a3e26');
+
+// Your house (263 W 800N)
+const houseX=x300W+px(0.04),houseY=y800N;
+building(houseX-14,houseY-18,28,22,'#e060a0','#fff0f8',true,'#a03080');
+[[-8,10],[0,13],[8,10],[-5,17],[5,17]].forEach(([dx,dy])=>flower(houseX+dx,houseY+dy,'#f070b0'));
+rrect(houseX-40,houseY-40,80,16,4,'rgba(255,255,255,0.92)');
+g.save();g.strokeStyle='#c05080';g.lineWidth=1.5;g.beginPath();g.roundRect(houseX-40,houseY-40,80,16,4);g.stroke();g.restore();
+lbl('🏠 your house',houseX,houseY-32,8,'#c05080');
+
+// 13. TREES (verbatim from peach-town-map)
+const TC=[['#58a028','#3a8018','#70b840'],['#509028','#388018','#68b038'],['#609030','#408020','#78b848']];
+[[px(0.10),py(0.14)],[px(0.10),py(0.30)],[px(0.10),py(0.45)],[px(0.10),py(0.58)],[px(0.10),py(0.72)],[px(0.10),py(0.85)],[px(0.08),py(0.18)],[px(0.08),py(0.28)],[px(0.08),py(0.38)],[px(0.30),py(0.16)],[px(0.34),py(0.20)],[px(0.30),py(0.28)],[px(0.87),py(0.18)],[px(0.87),py(0.32)],[px(0.87),py(0.46)],[px(0.87),py(0.60)],[px(0.87),py(0.74)],[px(0.87),py(0.88)],[px(0.20),py(0.90)],[px(0.35),py(0.92)],[px(0.50),py(0.90)],[px(0.65),py(0.92)],[px(0.15),py(0.55)],[px(0.15),py(0.68)],[px(0.42),py(0.45)],[px(0.56),py(0.38)]].forEach(([tx,ty],i)=>tree(tx,ty,0.55+rnd(0,0.2),...TC[i%3]));
+[[px(0.22),py(0.55)],[px(0.38),py(0.60)],[px(0.55),py(0.52)],[px(0.20),py(0.78)],[px(0.45),py(0.82)],[px(0.65),py(0.58)]].forEach(([x,y])=>bush(x,y,0.7));
+[[px(0.25),py(0.42),'#f4d030'],[px(0.40),py(0.38),'#f07090'],[px(0.60),py(0.45),'#a070e0'],[px(0.30),py(0.68),'#f4d030'],[px(0.50),py(0.72),'#f07090'],[px(0.70),py(0.65),'#f4d030']].forEach(([x,y,col])=>flower(x,y,col));
+[[px(0.20),py(0.62)],[px(0.55),py(0.55)],[px(0.38),py(0.74)],[px(0.65),py(0.72)]].forEach(([x,y])=>mushroom(x,y,0.7));
+
+// 14. STREET LABELS
+const ewL=[[y900N,'900 N'],[y800N,'800 N'],[y750N,'750 N'],[y700N,'700 N'],[y600N,'600 N'],[yForestSt,'Forest St'],[y400N,'400 N'],[y325N,'325 N'],[y300N,'300 N']];
+ewL.forEach(([y2,name])=>{g.save();g.font='600 6px Helvetica,sans-serif';g.fillStyle='#7a5a38';g.textAlign='right';g.textBaseline='middle';g.shadowColor='rgba(255,255,255,0.8)';g.shadowBlur=3;g.fillText(name,px(0.09)-3,y2);g.restore()});
+[y900N,y800N,y700N,y600N,yForestSt,y400N,y300N].forEach((y2,i)=>{const n=['E 900 N','E 800 N','E 700 N','E 600 N','E 500 N','E 400 N','E 300 N'][i];g.save();g.font='600 6px Helvetica,sans-serif';g.fillStyle='#7a5a38';g.textAlign='left';g.textBaseline='middle';g.shadowColor='rgba(255,255,255,0.8)';g.shadowBlur=3;g.fillText(n,px(0.92)+3,y2);g.restore()});
+lbl('N Main St',xMain+22,py(0.50),8,'#3a2415');lbl('Forest St',px(0.10),yForestSt-10,7,'#3a2415','left');
+
+// 15. COMPASS
+const crx=W-36,cry=H-36;
+circle(crx,cry,24,'#f5ecd0',0.95);
+g.save();g.strokeStyle='#8b6343';g.lineWidth=2;g.beginPath();g.arc(crx,cry,24,0,Math.PI*2);g.stroke();
+poly([[crx,cry-20],[crx-4,cry-8],[crx,cry-12],[crx+4,cry-8]],'#c0392b');
+poly([[crx,cry+20],[crx-4,cry+8],[crx,cry+12],[crx+4,cry+8]],'#8a7a6a');
+g.restore();lbl('N',crx,cry-12,8,'#c0392b');lbl('S',crx,cry+14,7,'#8a7a6a');lbl('W',crx-12,cry,7,'#8a7a6a');lbl('E',crx+12,cry,7,'#8a7a6a');
+
+// 16. TITLE
+rrect(10,10,162,28,6,'#f5ecd0',0.95);
+g.save();g.strokeStyle='#8b6343';g.lineWidth=2;g.beginPath();g.roundRect(10,10,162,28,6);g.stroke();g.restore();
+lbl('🍑 Peach Town',91,24,11,'#3a2415');
+} // end drawMap
+
+// ─────────────────────────────────────────────
+// LEAFLET
+// ─────────────────────────────────────────────
+const toLL=(lx,ly)=>[-ly,lx];
+const bounds=L.latLngBounds(toLL(0,H),toLL(W,0));
+
+document.fonts.ready.then(()=>{
+  drawMap();
+  const url=cv.toDataURL('image/png');
+
+  const map=L.map('map',{crs:L.CRS.Simple,minZoom:-3,maxZoom:2,zoomSnap:0.1,zoomDelta:3,wheelPxPerZoomLevel:10,attributionControl:false});
+  L.imageOverlay(url,bounds,{interactive:false}).addTo(map);
+  map.fitBounds(bounds,{padding:[0,0]});
+
+  map.createPane('fogPane');map.getPane('fogPane').style.zIndex=450;
+
+  function makeFog(w,h,label){
+    const el=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    el.setAttribute('viewBox',`0 0 ${w} ${h}`);
+    el.innerHTML=`
+      <defs>
+        <filter id="f${w}" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4"/>
+        </filter>
+      </defs>
+      <g filter="url(#f${w})" opacity=".82">
+        <ellipse cx="${w*.50}" cy="${h*.68}" rx="${w*.42}" ry="${h*.30}" fill="white"/>
+        <circle cx="${w*.28}" cy="${h*.48}" r="${w*.22}" fill="white"/>
+        <circle cx="${w*.52}" cy="${h*.38}" r="${w*.26}" fill="white"/>
+        <circle cx="${w*.76}" cy="${h*.46}" r="${w*.20}" fill="white"/>
+        <circle cx="${w*.12}" cy="${h*.60}" r="${w*.14}" fill="white"/>
+        <circle cx="${w*.88}" cy="${h*.60}" r="${w*.13}" fill="white"/>
+      </g>
+      <text x="${w/2}" y="${h*.88}" font-family="Nunito,sans-serif" font-size="${Math.min(w,h)*.15}" font-weight="800" fill="#7a8a72" text-anchor="middle" opacity=".9">${label}</text>`;
+    return el;
+  }
+
+  const fogLayers=STOPS.map((s,i)=>{
+    const [cx,cy]=SXY[i];
+    const wr=i===0?80:50, hr=i===0?30:42;
+    const sw=toLL(cx-wr,cy+hr),ne=toLL(cx+wr,cy-hr);
+    return L.svgOverlay(makeFog(wr*2,hr*2,s.icon+' ???'),L.latLngBounds(sw,ne),{interactive:false,pane:'fogPane'}).addTo(map);
+  });
+
+  STOPS.forEach((s,i)=>{
+    const [lx,ly]=SXY[i];
+    const icon=L.divIcon({html:`<div class="sp" id="sp${i}"><div class="pb">${s.icon} ${s.name.split(' ').slice(0,2).join(' ')}</div><div class="ps"></div><div class="pd"></div></div>`,className:'',iconSize:[140,38],iconAnchor:[70,38]});
+    L.marker(toLL(lx,ly),{icon,interactive:false}).addTo(map);
+  });
+
+  const houseX=x300W+px(0.04),houseY=y800N;
+  L.marker(toLL(houseX,houseY),{interactive:false,icon:L.divIcon({html:`<div class="hp"><div class="hb">🏠 your house</div><div class="hs"></div><div class="hd"></div></div>`,className:'',iconSize:[120,36],iconAnchor:[60,36]})}).addTo(map);
+
+  // checklist
+  const checked=new Array(STOPS.length).fill(false);
+  let panelOpen=false;
+  const list=document.getElementById('cl');
+  STOPS.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='sc';d.id='sc'+i;d.style.animationDelay=(i*.05)+'s';
+    d.innerHTML=`<div class="ch" onclick="tc(${i})"><div class="cb"></div><div class="ci">${s.icon}</div><div style="flex:1;min-width:0"><div class="cn">${s.name}</div><div class="ct">${s.tag}</div></div><div class="cv">▼</div></div><div class="cd"><div class="cdi"><p class="cdesc">${s.desc}</p><div class="tb"><div class="tl">✨ task</div><div class="tx">${s.task}</div></div><button class="gb" onclick="mv(${i});event.stopPropagation()">✓ i visited this spot!</button><div class="um">${s.unlock}</div></div></div>`;
+    list.appendChild(d);
+  });
+
+  function up(){const n=checked.filter(Boolean).length;document.getElementById('pf').style.width=(n/STOPS.length*100)+'%';document.getElementById('pn').textContent=n+' / '+STOPS.length+' stops visited';if(n===STOPS.length)document.getElementById('cb').classList.add('show')}
+  up();
+
+  let tt2;
+  function toast(txt){clearTimeout(tt2);const t=document.getElementById('toast');document.getElementById('tt').textContent=txt;t.classList.add('show');tt2=setTimeout(()=>t.classList.remove('show'),4000)}
+
+  window.mv=function(i){
+    if(checked[i])return;checked[i]=true;
+    document.getElementById('sc'+i).classList.add('done');
+    const fl=fogLayers[i],fe=fl.getElement();
+    if(fe){fe.style.transition='opacity 1s ease';fe.style.opacity='0'}
+    setTimeout(()=>{try{map.removeLayer(fl)}catch(e){}},1100);
+    const pin=document.getElementById('sp'+i);
+    if(pin)pin.classList.add('lit');
+    up();toast(STOPS[i].unlock);
+    map.setView(toLL(...SXY[i]),Math.max(map.getZoom(),0),{animate:true,duration:.7});
+  };
+  window.tc=function(i){const el=document.getElementById('sc'+i),was=el.classList.contains('open');document.querySelectorAll('.sc').forEach(e=>e.classList.remove('open'));if(!was)el.classList.add('open')};
+  window.togglePanel=function(){panelOpen=!panelOpen;document.getElementById('panel').classList.toggle('open',panelOpen);document.getElementById('pa').textContent=panelOpen?'▼':'▲'};
+
+  setTimeout(()=>toast('oh my goodness, happy 30th birthday, camilla!! 🎉 shall we explore peach town today?'),800);
+  document.getElementById('pb').addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+  document.getElementById('pb').addEventListener('touchmove',e=>e.stopPropagation(),{passive:true});
+});
+</script>
+</body>
+</html>

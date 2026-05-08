@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camilla's Town Map 🍑</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --sky2: #dcedc8; --grass: #8bc34a; --grass-dark: #689f38;
+  --soil: #795548; --soil-light: #a1887f; --peach: #ffcc80;
+  --peach-dark: #ffa726; --cream: #fff8e1; --ink: #3e2723;
+  --mid: #6d4c41; --white: #fefefe; --path: #d7ccc8; --path-dark: #bcaaa4;
+  --yellow: #fff176;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes wobble { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes sparkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+@keyframes cloud { 0%{transform:translateX(0)} 100%{transform:translateX(40px)} }
+html { scroll-behavior: smooth; }
+body { background: #c8e6c9; font-family: 'Nunito', sans-serif; color: var(--ink); min-height: 100vh; }
+.sky { background: linear-gradient(180deg, #b3e5fc 0%, #c8e6c9 60%, #dcedc8 100%); padding: 32px 20px 0; position: relative; overflow: hidden; min-height: 220px; }
+.cloud { position: absolute; font-size: 40px; animation: cloud 8s ease-in-out infinite alternate; opacity: 0.85; }
+.cloud:nth-child(1) { top:20px; left:8%; animation-duration:7s; }
+.cloud:nth-child(2) { top:50px; left:55%; animation-duration:11s; font-size:28px; }
+.cloud:nth-child(3) { top:15px; right:12%; animation-duration:9s; }
+.town-name { text-align:center; position:relative; z-index:2; animation:fadeUp 0.6s ease both; }
+.town-sign { display:inline-block; background:var(--soil); color:var(--cream); font-weight:800; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; padding:6px 18px 5px; border-radius:4px 4px 0 0; border:3px solid var(--soil-light); border-bottom:none; }
+.town-title { background:var(--cream); border:4px solid var(--soil); border-radius:12px; padding:14px 28px 12px; display:inline-block; position:relative; }
+.town-title h1 { font-weight:800; font-size:clamp(24px,6vw,42px); color:var(--ink); line-height:1; }
+.town-title h1 span { color:var(--grass-dark); }
+.town-title p { font-size:13px; color:var(--mid); margin-top:4px; font-style:italic; }
+.post-left,.post-right { position:absolute; bottom:0; width:12px; height:40px; background:var(--soil); border-radius:2px; }
+.post-left { left:-8px; } .post-right { right:-8px; }
+.character { font-size:36px; display:inline-block; animation:float 2.5s ease-in-out infinite; margin-left:10px; vertical-align:middle; }
+.bulletin { max-width:560px; margin:0 auto; padding:16px 20px 0; animation:fadeUp 0.6s 0.1s ease both; }
+.bulletin-board { background:var(--soil-light); border-radius:8px; padding:6px; box-shadow:0 4px 0 var(--soil); }
+.bulletin-paper { background:var(--cream); border-radius:4px; padding:16px 18px; border:2px dashed var(--path-dark); position:relative; }
+.bulletin-paper::before { content:'📌'; position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:20px; }
+.bulletin-paper p { font-size:14px; line-height:1.7; color:var(--mid); text-align:center; }
+.bulletin-paper p strong { color:var(--ink); font-weight:800; }
+.ground { background:linear-gradient(180deg,var(--sky2) 0%,#aed581 40%); padding:12px 20px 0; }
+.stops { max-width:600px; margin:0 auto; padding:8px 20px 60px; }
+.stop { display:flex; gap:14px; margin-bottom:4px; animation:fadeUp 0.5s ease both; }
+.stop:nth-child(1){animation-delay:.2s}.stop:nth-child(2){animation-delay:.3s}.stop:nth-child(3){animation-delay:.4s}
+.stop:nth-child(4){animation-delay:.5s}.stop:nth-child(5){animation-delay:.6s}.stop:nth-child(6){animation-delay:.7s}
+.stop:nth-child(7){animation-delay:.8s}
+.stop-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:52px; }
+.stop-icon { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; border:3px solid var(--ink); background:var(--cream); box-shadow:0 3px 0 var(--soil); flex-shrink:0; z-index:1; position:relative; }
+.stop:last-child .stop-icon { background:var(--peach); box-shadow:0 3px 0 var(--peach-dark); animation:wobble 2s ease-in-out infinite; }
+.path-segment { width:6px; flex:1; background:repeating-linear-gradient(to bottom,var(--path) 0px,var(--path) 8px,transparent 8px,transparent 14px); border-radius:3px; min-height:24px; margin:2px 0; }
+.stop:last-child .path-segment { display:none; }
+.stop-card { background:var(--white); border:3px solid var(--ink); border-radius:12px; padding:14px 16px 16px; margin-bottom:8px; flex:1; box-shadow:4px 4px 0 var(--ink); position:relative; transition:transform 0.15s,box-shadow 0.15s; }
+.stop-card:hover { transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+.stop:last-child .stop-card { border-color:var(--peach-dark); box-shadow:4px 4px 0 var(--peach-dark); background:var(--cream); }
+.stop:last-child .stop-card:hover { box-shadow:6px 6px 0 var(--peach-dark); }
+.stop-tag { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--mid); background:var(--path); border-radius:20px; padding:3px 10px; margin-bottom:6px; }
+.stop-name { font-weight:800; font-size:18px; color:var(--ink); margin-bottom:6px; line-height:1.2; }
+.stop-desc { font-size:13.5px; line-height:1.65; color:var(--mid); margin-bottom:12px; font-family:'Libre Baskerville',serif; font-style:italic; }
+.task-box { background:var(--yellow); border:2px solid var(--ink); border-radius:8px; padding:10px 12px; margin-bottom:8px; }
+.task-label { font-size:10px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink); margin-bottom:3px; }
+.task-text { font-size:13px; color:var(--ink); font-weight:600; line-height:1.5; }
+.unlock-tag { display:inline-flex; align-items:center; gap:5px; background:var(--grass); color:var(--white); font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; border:2px solid var(--ink); }
+.transport-note { font-size:11px; color:var(--mid); font-weight:600; margin-top:8px; opacity:0.8; }
+.sparkle { display:inline-block; animation:sparkle 1.5s ease-in-out infinite; }
+.sparkle:nth-child(2){animation-delay:.5s}.sparkle:nth-child(3){animation-delay:1s}
+.finale { background:var(--soil); padding:40px 24px; text-align:center; position:relative; overflow:hidden; }
+.finale::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,0.03) 10px,rgba(255,255,255,0.03) 20px); }
+.finale-stars { font-size:24px; letter-spacing:8px; margin-bottom:12px; position:relative; }
+.finale-title { font-weight:800; font-size:32px; color:var(--cream); position:relative; margin-bottom:6px; }
+.finale-sub { font-family:'Libre Baskerville',serif; font-style:italic; font-size:15px; color:var(--path); position:relative; line-height:1.6; }
+.grass-strip { height:28px; background:repeating-linear-gradient(90deg,#8bc34a 0px,#8bc34a 18px,#7cb342 18px,#7cb342 36px); border-top:3px solid var(--grass-dark); }
+@media(max-width:480px){.stop-icon{width:42px;height:42px;font-size:20px}.stop-left{width:42px}.stop-name{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="sky">
+  <span class="cloud">☁️</span><span class="cloud">☁️</span><span class="cloud">⛅</span>
+  <div class="town-name">
+    <div class="town-sign">🍑 Peach Town</div>
+    <div class="town-title">
+      <div class="post-left"></div><div class="post-right"></div>
+      <h1><span>Camilla's</span> Discovery Map<span class="character">🌿</span></h1>
+      <p>may 8th · your 30th birthday · brigham city, utah</p>
+    </div>
+  </div>
+</div>
+<div class="ground">
+  <div class="bulletin">
+    <div class="bulletin-board"><div class="bulletin-paper">
+      <p>oh my goodness, you're finally here! 🎉<br>it looks like you've been living in this town for a while now,<br>but there are still so many things left to discover!<br><strong>today is a very special day. shall we explore together?</strong></p>
+    </div></div>
+  </div>
+</div>
+<div class="ground"><div class="stops">
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🌅</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚗 10 min drive south · willard bay</div>
+      <div class="stop-name">The Big Peaceful Water</div>
+      <p class="stop-desc">oh, you haven't been to willard bay yet?! it's just a short drive south of town! the water is so calm and clear in the morning, and all sorts of birds come to visit. it's been here your whole time in town and i think it's been waiting for you to come say hello!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">stand right at the water's edge and say one thing out loud that you're leaving behind. the herons are very discreet, so don't worry!</div></div>
+      <span class="unlock-tag">🔓 unlocks: knowing your bay</span>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🚂</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · forest st · open fri 2–6pm</div>
+      <div class="stop-name">The Old Train Station</div>
+      <p class="stop-desc">wow, this building has been here since 1907! i've read that back in the old days, the whole town would bring their peaches and cherries here to be loaded onto trains and sent all over the country! can you imagine?! the trains don't stop here anymore, but the building is still just as lovely. i think the history is kind of soaked into the walls!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">find one thing inside that surprises you! it doesn't have to be a big thing. just something you didn't expect to find here!</div></div>
+      <span class="unlock-tag">🔓 unlocks: your town's railroad era</span>
+      <div class="transport-note">⏰ opens at 2pm — plan accordingly</div>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🔍</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · main street</div>
+      <div class="stop-name">The Secret in the Wall</div>
+      <p class="stop-desc">oh, this is one of my favorite things to tell new residents about! there's a plaque on main street marking where the old cooperative store used to be, but if you look very carefully at the brickwork right next to it, you can still see the outline of the original building! it's been gone for over a hundred years but it's still kind of... there! like a little ghost!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">find the ghost outline in the bricks and take a photo! you'll probably walk right past it the first time. that's okay! most people do!</div></div>
+      <span class="unlock-tag">🔓 unlocks: seeing what others miss</span>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🏛️</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · forest street · free</div>
+      <div class="stop-name">The Museum With 12,000 Things In It</div>
+      <p class="stop-desc">did you know we have a museum right here on forest street?! and it's completely free! it has fossils and crystals and pioneer artifacts and a room that glows under black light — i'm not totally sure what's in all of it, actually. i think that's kind of the point! it's in an old school building and some of the things inside have just been sitting there quietly for a hundred and fifty years!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">find the one thing that gives you a feeling you can't quite name. stand in front of it for a whole minute. take a photo. no caption needed!</div></div>
+      <span class="unlock-tag">🔓 unlocks: your weird museum</span>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🦆</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · forest street · rees pioneer park</div>
+      <div class="stop-name">The Duck Pond</div>
+      <p class="stop-desc">rees pioneer park is one of my very favorite spots in town! there's a little bridge and a fountain and ducks who are very friendly if you approach them calmly. residents have been sitting on these benches since before utah was even a state, which i find very comforting somehow! sometimes the best thing to do in a town is just... sit in it for a little while!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">sit down on a bench. write three things you actually WANT to do this summer — not things you should do, things you genuinely want! screenshot it! that's your summer bucket list now, it's official!</div></div>
+      <span class="unlock-tag">🔓 unlocks: your summer</span>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">⭐</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · main street</div>
+      <div class="stop-name">The Big Glowing Arch</div>
+      <p class="stop-desc">the gateway arch has three hundred and fifty light bulbs in it! the townspeople paid for it themselves back in 1908 because they wanted main street to glow, which i think is just the loveliest reason to do something. it still lights up! you've probably walked right under it without really looking! today you should look!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">stand directly underneath it and look up! then get someone to take a photo of you there — with your flowers! this is the birthday photo!</div></div>
+      <span class="unlock-tag">🔓 unlocks: your arch, your town</span>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-left"><div class="stop-icon">🎱</div><div class="path-segment"></div></div>
+    <div class="stop-card">
+      <div class="stop-tag">🚶 walkable · 21 w forest st</div>
+      <div class="stop-name">The Tavern — You Made It!!</div>
+      <p class="stop-desc">oh, b&b billiards!! did you know it's been here since 1903?! that's older than the arch and older than the train station! it has seen every single kind of night this town has ever had, and tonight it gets to see yours! you explored your whole town today! you found things most residents never look for! now you get to celebrate with everyone you love!</p>
+      <div class="task-box"><div class="task-label">✨ task</div><div class="task-text">when someone asks how old you are tonight, say "thirty!" without hesitating — just once, nice and proud! then order whatever you like! you've earned it!!</div></div>
+      <span class="unlock-tag">🔓 unlocks: your night</span>
+    </div>
+  </div>
+
+</div></div>
+
+<div class="grass-strip"></div>
+<div class="finale">
+  <div class="finale-stars"><span class="sparkle">✨</span><span class="sparkle">🍑</span><span class="sparkle">✨</span></div>
+  <div class="finale-title">map complete!!</div>
+  <div class="finale-sub">what a wonderful day you've had!<br>this town is so lucky to have you in it.<br>happy 30th birthday, camilla!! 🌿</div>
+</div>
+</body>
+</html>

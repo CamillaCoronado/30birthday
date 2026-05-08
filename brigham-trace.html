@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brigham City Streets</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #6a9ab8; display: flex; flex-direction: column; align-items: center; padding: 12px; min-height: 100vh; }
+h2 { color: white; margin-bottom: 8px; font-size: 12px; opacity: .75; letter-spacing: .12em; text-transform: uppercase; }
+svg { max-width: 100%; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+</style>
+</head>
+<body>
+<h2>brigham city, utah — street reference</h2>
+<!--
+COORDINATE TRANSFORM
+  Bbox: W=-112.075, E=-111.958, N=41.563, S=41.448
+  SVG:  x: 0→800, y: 0→740
+
+  x(lon) = (lon + 112.075) / 0.117 * 800
+  y(lat) = (41.563 - lat)  / 0.115 * 740
+
+  Key x values (vertical streets, lon→x):
+  -112.075 → x=0    (west edge / I-15 area)
+  -112.058 → x=116  (I-15 centerline)
+  -112.040 → x=239  (700 W)
+  -112.030 → x=307  (400 W)
+  -112.022 → x=358  (300 W / Main St area)
+  -112.013 → x=419  (Main St)
+  -112.005 → x=470  (100 W)  -- wait Main is actually ~-112.013
+  -112.000 → x=504  (100 E)
+  -111.990 → x=572  (200 E / 100 E area)
+  -111.975 → x=674  (canyon entrance)
+  -111.958 → x=800
+
+  Actually from real data:
+  Main St (S Main/N Main) ≈ lon -112.013 → x = (0.062/0.117)*800 = 424
+  Forest St ≈ lat 41.497 → y = (0.066/0.115)*740 = 424... let me recalc
+
+  lon=-112.075: x=0
+  lon=-112.013: x=(112.075-112.013)/0.117*800 = 0.062/0.117*800 = 424
+  lon=-111.958: x=800
+
+  lat=41.563: y=0  
+  lat=41.497: y=(41.563-41.497)/0.115*740 = 0.066/0.115*740 = 425
+  lat=41.448: y=740
+
+  Main St x≈424, Forest St y≈425  ✓ (roughly centered, good)
+
+  Street grid (Brigham City uses numbered system):
+  N-S streets (by longitude):
+    I-15:      -112.058 → x=109
+    1200 W:    -112.050 → x=163  (approx)
+    900 W:     -112.040 → x=230
+    700 W:     -112.033 → x=278
+    500 W:     -112.026 → x=324
+    300 W:     -112.020 → x=365
+    100 W:     -112.015 → x=399
+    Main St:   -112.013 → x=412  (slight jog)
+    100 E:     -112.006 → x=461
+    200 E:     -112.000 → x=503
+    400 E:     -111.993 → x=551
+    600 E:     -111.986 → x=598  (near canyon)
+
+  E-W streets (by latitude):
+    1400 N:    41.543 → y=136
+    1200 N:    41.535 → y=187
+    1000 N:    41.527 → y=241
+    800 N:     41.519 → y=293
+    600 N:     41.511 → y=345
+    400 N:     41.509 → y=358  -- close to Forest actually
+    Forest/200N: 41.497 → y=425
+    100 N:     41.502 → y=393
+    100 S:     41.492 → y=457
+    200 S:     41.487 → y=490
+    400 S:     41.477 → y=557
+    600 S:     41.467 → y=623
+    800 S:     41.457 → y=689
+
+  City limits approx:
+    North: ~41.548 → y=102
+    South: ~41.458 → y=683
+    West:  ~112.062 → x=83
+    East:  ~111.968 → x=639  (irregular, follows foothills)
+-->
+<svg viewBox="0 0 800 740" width="800" height="740" xmlns="http://www.w3.org/2000/svg">
+
+<!-- BACKGROUND: terrain -->
+<!-- desert scrub west of I-15 -->
+<rect width="800" height="740" fill="#c8c8a0"/>
+
+<!-- mountains east -->
+<polygon points="639,0 660,30 645,65 668,100 650,138 672,175 654,212 675,250 657,290 678,330 658,372 676,415 655,458 674,500 652,542 671,583 648,624 665,664 640,700 639,740 800,740 800,0"
+  fill="#a0b878"/>
+<polygon points="639,0 655,28 641,62 663,97 646,134 668,170 651,207 671,244 654,283 673,322 655,362 671,404 651,447 668,490 648,532 665,573 643,614 659,654 639,700"
+  fill="#b0c888"/>
+<!-- snow -->
+<polygon points="643,0 652,20 635,38" fill="white" opacity=".65"/>
+<polygon points="652,72 661,92 643,92" fill="white" opacity=".55"/>
+<polygon points="648,158 657,178 638,178" fill="white" opacity=".45"/>
+
+<!-- GSL west -->
+<ellipse cx="22" cy="370" rx="28" ry="200" fill="#78bcd0" opacity=".55"/>
+<ellipse cx="16" cy="370" rx="16" ry="175" fill="#a8dce8" opacity=".3"/>
+
+<!-- CITY LAND AREA -->
+<path d="
+  M 83,102
+  L 180,100 L 280,98 L 380,96 L 424,97 L 500,95 L 570,96 L 612,100 L 630,112 L 636,135
+  L 638,180 L 636,225 L 638,270 L 636,315 L 638,360 L 636,405 L 638,450
+  L 636,495 L 634,535 L 626,558 L 608,572 L 570,578 L 510,576 L 450,578
+  L 390,576 L 330,578 L 270,576 L 210,578 L 160,575 L 128,563 L 110,545
+  L 96,520 L 88,490 L 86,455 L 88,420 L 86,385 L 88,350 L 86,315
+  L 88,280 L 86,245 L 88,210 L 86,175 L 88,140 L 90,118 L 83,102 Z
+" fill="#b8cc88" stroke="#8aa060" stroke-width="2.5"/>
+
+<!-- terrain variation -->
+<ellipse cx="280" cy="280" rx="110" ry="85" fill="#a8bc78" opacity=".3"/>
+<ellipse cx="480" cy="420" rx="90" ry="70" fill="#a8bc78" opacity=".25"/>
+<ellipse cx="350" cy="490" rx="80" ry="55" fill="#b8cc88" opacity=".2"/>
+
+<!-- WILLARD BAY (south, outside city) -->
+<ellipse cx="360" cy="720" rx="120" ry="32" fill="#70b8cc"/>
+<ellipse cx="360" cy="720" rx="95" ry="20" fill="#a0d8e8" opacity=".45"/>
+<line x1="248" y1="716" x2="472" y2="719" stroke="#c8eef8" stroke-width="2" opacity=".7"/>
+<line x1="252" y1="724" x2="468" y2="727" stroke="#c8eef8" stroke-width="1.5" opacity=".45"/>
+
+<!-- BOX ELDER CREEK -->
+<path d="M 540,96 C 535,155 550,215 538,275 C 526,335 542,395 530,455 C 518,515 532,555 525,578"
+  stroke="#5ab0c8" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M 540,96 C 535,155 550,215 538,275 C 526,335 542,395 530,455 C 518,515 532,555 525,578"
+  stroke="#98d8ea" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".55"/>
+
+<!-- ═══════════════════════════
+     STREET GRID
+═══════════════════════════ -->
+
+<!-- I-15 (heavy, western edge) -->
+<path d="M 109,102 C 106,200 102,300 100,400 C 98,480 100,530 103,575"
+  stroke="#9a9888" stroke-width="13" fill="none" stroke-linecap="round"/>
+<path d="M 109,102 C 106,200 102,300 100,400 C 98,480 100,530 103,575"
+  stroke="#e0d8c0" stroke-width="3" fill="none" stroke-dasharray="14,9" opacity=".8"/>
+<!-- I-15 label -->
+<rect x="88" y="320" width="24" height="14" rx="3" fill="#4060a0"/>
+<text x="100" y="330" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">15</text>
+
+<!-- HWY 89 northeast diagonal -->
+<path d="M 424,97 C 464,118 504,138 544,156 C 578,172 608,188 632,206"
+  stroke="#c0a878" stroke-width="9" fill="none" stroke-linecap="round"/>
+<path d="M 424,97 C 464,118 504,138 544,156 C 578,172 608,188 632,206"
+  stroke="#e8d8a8" stroke-width="2.5" fill="none" stroke-dasharray="11,7" opacity=".7"/>
+<text x="544" y="148" font-family="Helvetica,Arial,sans-serif" font-size="7" font-weight="bold" fill="#5a4020" text-anchor="middle" transform="rotate(25,544,148)">US-89</text>
+
+<!-- ── N-S STREETS ── -->
+<!-- 1200 W (approx lon -112.050 → x=163) -->
+<line x1="163" y1="102" x2="163" y2="575" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 900 W (lon -112.040 → x=230) -->
+<line x1="230" y1="102" x2="230" y2="575" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 700 W (lon -112.033 → x=278) -->
+<line x1="278" y1="102" x2="278" y2="575" stroke="#c8b888" stroke-width="4" opacity=".65"/>
+<!-- 500 W (lon -112.026 → x=324) -->
+<line x1="324" y1="100" x2="324" y2="576" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- 300 W (lon -112.020 → x=366) -->
+<line x1="366" y1="100" x2="366" y2="576" stroke="#b8a870" stroke-width="5" opacity=".75"/>
+<!-- 100 W (lon -112.015 → x=399) -->
+<line x1="399" y1="100" x2="399" y2="576" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- MAIN STREET (lon -112.013 → x=412) -->
+<path d="M 424,97 L 424,576"
+  stroke="#a89060" stroke-width="12" stroke-linecap="round"/>
+<path d="M 424,97 L 424,576"
+  stroke="#e0cc98" stroke-width="5" stroke-linecap="round"/>
+<path d="M 424,97 L 424,576"
+  stroke="white" stroke-width="1.5" stroke-dasharray="11,8" opacity=".55"/>
+<!-- 100 E (lon -112.006 → x=461) -->
+<line x1="461" y1="100" x2="461" y2="576" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- 200 E (lon -112.000 → x=503) -->
+<line x1="503" y1="100" x2="503" y2="576" stroke="#c8b888" stroke-width="4" opacity=".65"/>
+<!-- 400 E (lon -111.993 → x=551) -->
+<line x1="551" y1="100" x2="551" y2="576" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 600 E (lon -111.986 → x=599) -->
+<line x1="599" y1="100" x2="599" y2="570" stroke="#c8b888" stroke-width="3" opacity=".5"/>
+
+<!-- ── E-W STREETS ── -->
+<!-- 1400 N (lat 41.543 → y=136) -->
+<line x1="88" y1="136" x2="635" y2="135" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 1200 N (lat 41.535 → y=187) -->
+<line x1="88" y1="187" x2="636" y2="186" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 1000 N (lat 41.527 → y=241) -->
+<line x1="88" y1="241" x2="637" y2="240" stroke="#c8b888" stroke-width="4" opacity=".65"/>
+<!-- 800 N (lat 41.519 → y=293) -->
+<line x1="88" y1="293" x2="636" y2="292" stroke="#b8a870" stroke-width="5" opacity=".75"/>
+<!-- 600 N (lat 41.511 → y=345) -->
+<line x1="88" y1="345" x2="636" y2="344" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- FOREST ST / 400 N area (lat 41.504 → y=390, this is Forest) -->
+<!-- Actually Forest St is at lat ~41.497 → y=425 -->
+<!-- Let's put labeled streets correctly -->
+<!-- 400 N (lat 41.509 → y=357) -->
+<line x1="88" y1="357" x2="636" y2="356" stroke="#c8b888" stroke-width="4" opacity=".65"/>
+<!-- FOREST STREET (lat 41.497 → y=425) — major -->
+<path d="M 88,425 L 636,424"
+  stroke="#a89060" stroke-width="12" stroke-linecap="round"/>
+<path d="M 88,425 L 636,424"
+  stroke="#e0cc98" stroke-width="5" stroke-linecap="round"/>
+<path d="M 88,425 L 636,424"
+  stroke="white" stroke-width="1.5" stroke-dasharray="11,8" opacity=".55"/>
+<!-- 200 N (lat 41.502 → y=393) -->
+<line x1="88" y1="393" x2="636" y2="392" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- 100 S (lat 41.492 → y=457) -->
+<line x1="88" y1="457" x2="632" y2="456" stroke="#c0b080" stroke-width="4" opacity=".7"/>
+<!-- 200 S (lat 41.487 → y=490) -->
+<line x1="88" y1="490" x2="630" y2="489" stroke="#c8b888" stroke-width="3.5" opacity=".65"/>
+<!-- 400 S (lat 41.477 → y=557) -->
+<line x1="88" y1="557" x2="625" y2="556" stroke="#c8b888" stroke-width="3.5" opacity=".6"/>
+<!-- 500 S (lat 41.472 → y=590) not shown, past city south edge in places -->
+<!-- 600 S (lat 41.467 → y=623) -->
+<!-- these are near Perry border -->
+
+<!-- ── STREET LABELS ── -->
+<text x="421" y="91" font-family="Helvetica,Arial,sans-serif" font-size="9" font-weight="bold" fill="#3a2810" text-anchor="middle">Main St</text>
+<text x="110" y="418" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#3a2810">Forest St</text>
+<!-- N-S street labels at bottom -->
+<text x="163" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">1200 W</text>
+<text x="230" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">900 W</text>
+<text x="278" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">700 W</text>
+<text x="324" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">500 W</text>
+<text x="366" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">300 W</text>
+<text x="399" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">100 W</text>
+<text x="461" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">100 E</text>
+<text x="503" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">200 E</text>
+<text x="551" y="588" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">400 E</text>
+<text x="599" y="586" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="middle">600 E</text>
+<!-- E-W labels on left -->
+<text x="82" y="139" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">1400 N</text>
+<text x="82" y="190" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">1200 N</text>
+<text x="82" y="244" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">1000 N</text>
+<text x="82" y="296" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">800 N</text>
+<text x="82" y="348" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">600 N</text>
+<text x="82" y="360" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">400 N</text>
+<text x="82" y="396" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">200 N</text>
+<text x="82" y="460" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">100 S</text>
+<text x="82" y="493" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">200 S</text>
+<text x="82" y="560" font-family="Helvetica,Arial,sans-serif" font-size="6.5" fill="#6a5030" text-anchor="end">400 S</text>
+
+<!-- ── LANDMARKS ── -->
+<!-- Your house: 263 W 800 N → lon≈-112.031→x=358, lat=41.519→y=293 (on 800N, west of Main) -->
+<!-- 263 W: 0.263° W of Main... wait, addresses: 263 W means 263 feet west of Main? No, it means between 200W and 300W approx -->
+<!-- In brigham city grid: 263 W 800 N = about 263 west address units, so between 200W and 300W, on 800N -->
+<!-- Between 100W(x=399) and 300W(x=366): 263W ≈ x=380 -->
+<!-- On 800N: y=293 -->
+<circle cx="380" cy="293" r="9" fill="#e67e22" stroke="white" stroke-width="2.5"/>
+<circle cx="380" cy="293" r="4" fill="white"/>
+<rect x="298" y="275" width="76" height="14" rx="3" fill="rgba(255,255,255,0.85)"/>
+<text x="336" y="285" font-family="Helvetica,Arial,sans-serif" font-size="7.5" font-weight="bold" fill="#c05010" text-anchor="middle">🏠 your house</text>
+
+<!-- Key landmarks (small dots with labels) -->
+<!-- Train Depot: Forest & 100E area → x=461, y=424 -->
+<circle cx="490" cy="424" r="6" fill="#8b6343" stroke="white" stroke-width="1.5"/>
+<text x="490" y="412" font-family="Helvetica,Arial,sans-serif" font-size="7" font-weight="bold" fill="#3a2415" text-anchor="middle">depot</text>
+
+<!-- Museum: Forest & 300W → x=366, y=424 -->
+<circle cx="366" cy="424" r="6" fill="#4a7c2f" stroke="white" stroke-width="1.5"/>
+<text x="351" y="412" font-family="Helvetica,Arial,sans-serif" font-size="7" font-weight="bold" fill="#3a2415">museum</text>
+
+<!-- Rees Park: Forest & 100-200E → x=480, y=440 -->
+<circle cx="530" cy="438" r="6" fill="#3a8020" stroke="white" stroke-width="1.5"/>
+<text x="530" y="450" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#3a2415" text-anchor="middle">rees pk</text>
+
+<!-- B&B Billiards: Forest & ~300W → x=350, y=424 -->
+<circle cx="350" cy="424" r="5" fill="#7a5898" stroke="white" stroke-width="1.5"/>
+<text x="330" y="436" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#3a2415">B&amp;B</text>
+
+<!-- Arch: Main & 200N area → x=424, y=393 -->
+<circle cx="424" cy="375" r="5" fill="#d4a030" stroke="white" stroke-width="1.5"/>
+<text x="436" y="372" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#3a2415">arch</text>
+
+<!-- Temple: Main & 200N → x=460, y=393 -->
+<circle cx="460" cy="393" r="5" fill="#e0e0c0" stroke="#9a8060" stroke-width="1.5"/>
+<text x="472" y="390" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#3a2415">temple</text>
+
+<!-- Tabernacle: 100W & 200N → x=399, y=393 -->
+<circle cx="399" cy="393" r="5" fill="#e0e0c0" stroke="#9a8060" stroke-width="1.5"/>
+<text x="386" y="383" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#3a2415">tab.</text>
+
+<!-- Orchards label -->
+<text x="200" y="260" font-family="Helvetica,Arial,sans-serif" font-size="8" fill="#3a5010" text-anchor="middle" font-style="italic">orchards</text>
+
+<!-- Geographic labels -->
+<text x="22" y="340" font-family="Helvetica,Arial,sans-serif" font-size="7" font-weight="bold" fill="#1a6070" text-anchor="middle">GSL</text>
+<text x="680" y="300" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#3a5020" text-anchor="middle" transform="rotate(90,680,300)">Wellsville Mtns</text>
+<text x="360" y="718" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#1a6070" text-anchor="middle">Willard Bay</text>
+<text x="558" y="268" font-family="Helvetica,Arial,sans-serif" font-size="7" fill="#1a6070" opacity=".8">Box Elder Creek</text>
+
+<!-- COMPASS -->
+<circle cx="748" cy="692" r="22" fill="#f5ecd0" stroke="#8b6343" stroke-width="2"/>
+<polygon points="748,672 744,683 748,680 752,683" fill="#c0392b"/>
+<polygon points="748,712 744,701 748,704 752,701" fill="#8a6a4a"/>
+<text x="748" y="675" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#c0392b" text-anchor="middle">N</text>
+<text x="748" y="712" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#8a6a4a" text-anchor="middle">S</text>
+<text x="730" y="696" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#8a6a4a" text-anchor="middle">W</text>
+<text x="766" y="696" font-family="Helvetica,Arial,sans-serif" font-size="8" font-weight="bold" fill="#8a6a4a" text-anchor="middle">E</text>
+
+<!-- TITLE -->
+<rect x="10" y="10" width="155" height="26" rx="5" fill="#f5ecd0" stroke="#8b6343" stroke-width="2"/>
+<text x="87" y="26" font-family="Helvetica,Arial,sans-serif" font-size="11" font-weight="bold" fill="#3a2415" text-anchor="middle">🍑 Brigham City, UT</text>
+
+</svg>
+</body>
+</html>

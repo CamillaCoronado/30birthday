@@ -1,0 +1,216 @@
+<!--
+  SVG trace of FullSizeRender.jpeg reference map
+  Source image content area: ~1080×915px (excluding title row)
+  SVG viewBox matches 1:1 so positions are directly traceable
+  
+  Measured pixel positions (from content area, title excluded):
+  
+  N-S streets (x positions):
+    Parkinson Dr:  x≈55
+    N 725W/600W:   x≈135
+    N 600W:        x≈160
+    N 500W (btm):  x≈260  (curves to x≈210 at 900N)
+    N 400W:        x≈375
+    N 300W:        x≈465
+    N 200W:        x≈555  (short, only 750N-900N)
+    N 100W:        x≈600
+    N Main St:     x≈730
+    N 100E:        x≈820
+    N 200E:        x≈910
+    
+  E-W streets (y from top of content):
+    900N:   y≈95
+    800N:   y≈185  (W 800N St label)
+    750N:   y≈240
+    700N:   y≈335
+    650N:   y≈380  (partial, east of 500W only)
+    600N:   y≈460
+    500N:   y≈565  (creek runs just below here)
+    400N:   y≈685
+    325N:   y≈755
+    300N:   y≈800
+    
+  Creek: starts x≈1060,y≈635 → curves to x≈0,y≈530
+  500W curve: straight x=260 from bottom to y≈460, then curves left reaching x≈210 at y≈95
+-->
+<svg viewBox="0 0 1080 915" width="1080" height="915" xmlns="http://www.w3.org/2000/svg" style="background:#f5f0d0">
+
+  <!-- BACKGROUND -->
+  <rect width="1080" height="915" fill="#f0ead8"/>
+
+  <!-- GOLF CLUB (teal patch top right) -->
+  <ellipse cx="870" cy="45" rx="120" ry="45" fill="#b8d8b0" opacity=".7"/>
+  <text x="870" y="30" font-family="sans-serif" font-size="11" fill="#2a6040" text-anchor="middle" font-weight="bold">Brigham Willows Golf Club</text>
+
+  <!-- HWY 13 (curves from top-right down to Main) -->
+  <path d="M 1080,30 C 980,40 900,60 840,80 C 800,95 770,105 730,115 L 730,95"
+    stroke="#b09060" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M 1080,30 C 980,40 900,60 840,80 C 800,95 770,105 730,115"
+    stroke="#e0d090" stroke-width="4" fill="none" stroke-dasharray="12,7"/>
+  <text x="880" y="68" font-family="sans-serif" font-size="13" font-weight="bold" fill="#5a4020" transform="rotate(10,880,68)">State Hwy 13</text>
+
+  <!-- N-S STREETS -->
+
+  <!-- Parkinson Dr (far left, curves south) -->
+  <path d="M 55,380 C 55,500 50,600 55,700 C 58,750 55,780 55,815"
+    stroke="#888" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- N 725W / N 675W (short stubs west side) -->
+  <line x1="55" y1="380" x2="160" y2="380" stroke="#888" stroke-width="4"/>
+  <line x1="55" y1="430" x2="160" y2="430" stroke="#888" stroke-width="3"/>
+
+  <!-- N 600W -->
+  <line x1="160" y1="0" x2="160" y2="915" stroke="#888" stroke-width="5"/>
+
+  <!-- N 500W — straight south section, curves northwest above 700N -->
+  <path d="M 260,915 L 260,460 C 260,420 255,380 248,340 C 242,300 230,265 220,230 C 212,200 210,160 210,95"
+    stroke="#999" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <!-- N 400W -->
+  <line x1="375" y1="0" x2="375" y2="915" stroke="#888" stroke-width="5"/>
+
+  <!-- N 300W -->
+  <line x1="465" y1="0" x2="465" y2="915" stroke="#888" stroke-width="5"/>
+
+  <!-- N 200W (short — only from ~750N to 900N area) -->
+  <line x1="555" y1="95" x2="555" y2="240" stroke="#888" stroke-width="4"/>
+  <!-- W 825N stub -->
+  <line x1="555" y1="145" x2="650" y2="145" stroke="#888" stroke-width="3"/>
+
+  <!-- N 100W -->
+  <line x1="600" y1="0" x2="600" y2="915" stroke="#888" stroke-width="5"/>
+
+  <!-- N MAIN ST (bold) -->
+  <line x1="730" y1="0" x2="730" y2="915" stroke="#666" stroke-width="9"/>
+
+  <!-- N 100E -->
+  <line x1="820" y1="335" x2="820" y2="915" stroke="#888" stroke-width="5"/>
+
+  <!-- N 200E (right edge, partial) -->
+  <line x1="910" y1="460" x2="910" y2="915" stroke="#888" stroke-width="4"/>
+
+  <!-- E-W STREETS -->
+
+  <!-- 900N -->
+  <line x1="0" y1="95" x2="1080" y2="95" stroke="#888" stroke-width="5"/>
+
+  <!-- 800N / W 800N St -->
+  <line x1="0" y1="185" x2="260" y2="185" stroke="#888" stroke-width="5"/>
+  <!-- gap where 500W is, then continues east -->
+  <line x1="260" y1="185" x2="1080" y2="185" stroke="#888" stroke-width="4"/>
+
+  <!-- 750N -->
+  <line x1="210" y1="240" x2="730" y2="240" stroke="#888" stroke-width="4"/>
+  <!-- short stub east of N200W -->
+  <line x1="555" y1="240" x2="650" y2="240" stroke="#888" stroke-width="3"/>
+
+  <!-- 700N -->
+  <line x1="0" y1="335" x2="1080" y2="335" stroke="#888" stroke-width="5"/>
+
+  <!-- 650N (partial — only east of 500W) -->
+  <line x1="260" y1="380" x2="730" y2="380" stroke="#888" stroke-width="3"/>
+  <!-- and east of main -->
+  <line x1="730" y1="380" x2="1080" y2="380" stroke="#888" stroke-width="3"/>
+
+  <!-- 600N -->
+  <line x1="0" y1="460" x2="1080" y2="460" stroke="#888" stroke-width="5"/>
+
+  <!-- 500N (major — creek runs just below) -->
+  <line x1="0" y1="565" x2="1080" y2="565" stroke="#888" stroke-width="6"/>
+
+  <!-- 400N -->
+  <line x1="0" y1="685" x2="1080" y2="685" stroke="#888" stroke-width="5"/>
+
+  <!-- 325N -->
+  <line x1="0" y1="755" x2="1080" y2="755" stroke="#888" stroke-width="4"/>
+
+  <!-- 300N -->
+  <line x1="0" y1="800" x2="1080" y2="800" stroke="#888" stroke-width="5"/>
+
+  <!-- BOX ELDER CREEK
+    From reference: starts right edge ~y=635 (between 400N and 500N),
+    flows diagonally WNW, crossing:
+      - 200E at y≈640
+      - 100E at y≈645  
+      - Main at y≈650 (just below 500N=565, above 400N=685... wait)
+    Actually looking carefully: creek label is between 400N and 500N
+    Creek enters at x=1080,y≈635
+    Crosses Main at ~y=655
+    Exits left at x=0,y≈530
+    So it's gently rising left (going upstream = east is downhill from mountains)
+  -->
+  <path d="M 1080,635
+    C 980,632 940,638 910,640
+    C 880,642 850,645 820,648
+    C 790,650 760,652 730,655
+    C 700,657 670,655 640,653
+    C 610,651 580,648 555,646
+    C 520,643 490,640 465,638
+    C 430,635 400,633 375,631
+    C 330,628 290,528 260,527
+    C 200,524 130,526 0,530"
+    stroke="#80c0d8" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- creek highlight -->
+  <path d="M 1080,635
+    C 980,632 940,638 910,640
+    C 880,642 850,645 820,648
+    C 790,650 760,652 730,655
+    C 700,657 670,655 640,653
+    C 610,651 580,648 555,646
+    C 520,643 490,640 465,638
+    C 430,635 400,633 375,631
+    C 330,628 290,528 260,527
+    C 200,524 130,526 0,530"
+    stroke="#b8e0f0" stroke-width="4" fill="none" stroke-linecap="round" opacity=".6"/>
+  <text x="780" y="690" font-family="sans-serif" font-size="13" fill="#2a7090" font-weight="bold" transform="rotate(-5,780,690)">Box Elder Creek</text>
+
+  <!-- SNOW PARK (green rect, east of Main at 500N) -->
+  <rect x="730" y="545" width="90" height="60" fill="#a8d890" stroke="#6a9040" stroke-width="2"/>
+  <text x="775" y="580" font-family="sans-serif" font-size="11" fill="#3a5020" text-anchor="middle" font-weight="bold">Snow Park</text>
+
+  <!-- STREET LABELS -->
+  <!-- E-W labels left side -->
+  <text x="5" y="90" font-family="sans-serif" font-size="12" fill="#444">W 900 N</text>
+  <text x="5" y="180" font-family="sans-serif" font-size="12" fill="#444">W 800 N St</text>
+  <text x="5" y="235" font-family="sans-serif" font-size="12" fill="#444">W 750 N</text>
+  <text x="270" y="330" font-family="sans-serif" font-size="12" fill="#444">W 700 N</text>
+  <text x="270" y="455" font-family="sans-serif" font-size="12" fill="#444">W 600 N</text>
+  <text x="5" y="560" font-family="sans-serif" font-size="12" fill="#444">W 500 N</text>
+  <text x="5" y="680" font-family="sans-serif" font-size="12" fill="#444">W 400 N</text>
+  <text x="5" y="750" font-family="sans-serif" font-size="12" fill="#444">W 325 N</text>
+  <text x="270" y="795" font-family="sans-serif" font-size="12" fill="#444">W 300 N</text>
+
+  <!-- E-W labels right side -->
+  <text x="1010" y="90" font-family="sans-serif" font-size="12" fill="#444" font-weight="bold">E 900 N</text>
+  <text x="840" y="180" font-family="sans-serif" font-size="12" fill="#444">E 800 N</text>
+  <text x="840" y="330" font-family="sans-serif" font-size="12" fill="#444">E 700 N</text>
+  <text x="840" y="455" font-family="sans-serif" font-size="12" fill="#444">E 600 N</text>
+  <text x="840" y="560" font-family="sans-serif" font-size="12" fill="#444">E 500 N</text>
+  <text x="840" y="680" font-family="sans-serif" font-size="12" fill="#444">E 400 N</text>
+  <text x="840" y="795" font-family="sans-serif" font-size="12" fill="#444">E 300 N</text>
+
+  <!-- N-S labels -->
+  <text x="730" y="55" font-family="sans-serif" font-size="14" fill="#333" font-weight="bold" text-anchor="middle" writing-mode="tb" transform="rotate(90,730,300)" y="300" x="718">N Main St</text>
+  <!-- simpler main st label -->
+  <text x="738" y="400" font-family="sans-serif" font-size="13" fill="#333" font-weight="bold" transform="rotate(90,738,400)">N Main St</text>
+
+  <text x="165" y="460" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,165,460)">N 600 W</text>
+  <text x="253" y="600" font-family="sans-serif" font-size="13" fill="#333" font-weight="bold" transform="rotate(90,253,600)">N 500 W</text>
+  <text x="378" y="600" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,378,600)">N 400 W</text>
+  <text x="468" y="600" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,468,600)">N 300 W</text>
+  <text x="558" y="280" font-family="sans-serif" font-size="10" fill="#444" transform="rotate(90,558,280)">N 200 W</text>
+  <text x="603" y="600" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,603,600)">N 100 W</text>
+  <text x="823" y="600" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,823,600)">N 100 E</text>
+  <text x="913" y="700" font-family="sans-serif" font-size="11" fill="#444" transform="rotate(90,913,700)">N 200 E</text>
+
+  <!-- Misc labels -->
+  <text x="5" y="380" font-family="sans-serif" font-size="10" fill="#555" transform="rotate(90,5,380)">Parkinson Dr</text>
+  <text x="100" y="375" font-family="sans-serif" font-size="10" fill="#555">N 725 W</text>
+  <text x="100" y="425" font-family="sans-serif" font-size="10" fill="#555">N 675 W</text>
+  <text x="60" y="440" font-family="sans-serif" font-size="10" fill="#555">W 650 N</text>
+  <text x="460" y="240" font-family="sans-serif" font-size="10" fill="#555">W 8 25 N</text>
+
+  <!-- Brigham City label -->
+  <text x="160" y="520" font-family="sans-serif" font-size="32" font-weight="bold" font-style="italic" fill="#222">Brigham City</text>
+
+</svg>

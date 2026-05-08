@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍑 Peach Town</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#4a8aaa;display:flex;flex-direction:column;align-items:center;padding:12px;min-height:100vh}
+canvas{max-width:100%;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// Canvas dimensions
+const W=800, H=760;
+const cv=document.getElementById('c');
+cv.width=W; cv.height=H;
+const g=cv.getContext('2d');
+
+// ── COORDINATE SYSTEM
+// Traced directly from reference image pixel positions
+// Reference image content area maps to our canvas 1:1 proportionally
+// All positions are fractions of W/H
+
+function px(fx){ return fx*W; }  // fractional x → canvas x
+function py(fy){ return fy*H; }  // fractional y → canvas y
+
+// ── KEY STREET POSITIONS (traced from reference image)
+// N-S streets (x positions as fraction of width)
+const xParkinson = px(0.04);
+const x600W      = px(0.165);
+const x500W_btm  = px(0.265); // 500W at bottom (straight section)
+const x400W      = px(0.375);
+const x300W      = px(0.463);
+const x200W      = px(0.555); // N 200 W
+const x100W      = px(0.600); // N 100 W
+const xMain      = px(0.730); // N Main St
+const x100E      = px(0.818); // N 100 E
+const x200E      = px(0.905); // N 200 E (right edge)
+
+// E-W streets (y positions as fraction of height)
+const y900N = py(0.145);
+const y800N = py(0.228);
+const y750N = py(0.278);
+const y700N = py(0.368);
+const y650N = py(0.415); // approx W 650N
+const y600N = py(0.500);
+const y500N = py(0.610);
+const y400N = py(0.735);
+const y325N = py(0.815);
+const y300N = py(0.865);
+
+// 500W curve: straight south section bottom→600N, then curves NW to top
+// At 900N it's shifted left to about x=0.205
+const x500W_900N = px(0.205);
+const x500W_800N = px(0.230);
+const x500W_750N = px(0.250);
+
+// canvas edges
+const xLeft=px(0.0), xRight=px(1.0);
+const yTop=py(0.0),  yBottom=py(1.0);
+
+// ── HELPERS ──
+function rnd(a,b){return a+Math.random()*(b-a)}
+
+function circle(x,y,r,col,alpha=1){
+  g.save();g.globalAlpha=alpha;
+  g.beginPath();g.arc(x,y,r,0,Math.PI*2);
+  g.fillStyle=col;g.fill();g.restore();
+}
+function rrect(x,y,w,h,r,col,alpha=1){
+  g.save();g.globalAlpha=alpha;
+  g.beginPath();g.roundRect(x,y,w,h,r);
+  g.fillStyle=col;g.fill();g.restore();
+}
+function poly(pts,col,alpha=1){
+  g.save();g.globalAlpha=alpha;
+  g.beginPath();g.moveTo(pts[0][0],pts[0][1]);
+  pts.slice(1).forEach(([x,y])=>g.lineTo(x,y));
+  g.closePath();g.fillStyle=col;g.fill();g.restore();
+}
+function lbl(txt,x,y,sz=9,col='#3a2415',align='center'){
+  g.save();g.font=`800 ${sz}px 'Helvetica Neue',Arial,sans-serif`;
+  g.textAlign=align;g.textBaseline='middle';
+  g.shadowColor='rgba(255,255,255,0.9)';g.shadowBlur=4;
+  g.fillStyle=col;g.fillText(txt,x,y);g.restore();
+}
+
+// ── AC TREE ──
+function tree(x,y,s=1,c1='#58a028',c2='#3a8018',c3='#78c040'){
+  g.save();g.globalAlpha=0.12;
+  g.beginPath();g.ellipse(x+3*s,y+8*s,12*s,4*s,0,0,Math.PI*2);
+  g.fillStyle='#000';g.fill();g.restore();
+  rrect(x-2.5*s,y+1*s,5*s,8*s,1,'#8b5e3c');
+  circle(x,y-2*s,12*s,c2);
+  circle(x-6*s,y,8*s,c1);
+  circle(x+6*s,y,8*s,c1);
+  circle(x,y-8*s,10*s,c3);
+  circle(x,y-3*s,9*s,c1);
+  circle(x-2*s,y-7*s,3.5*s,'rgba(255,255,255,0.18)');
+}
+function peachTree(x,y,s=1){
+  tree(x,y,s,'#68a830','#489018','#7ab840');
+  [[0,-4],[5,-1],[-4,0],[2,3],[-3,-7]].forEach(([dx,dy])=>{
+    circle(x+dx*s,y+dy*s,2.2*s,'#f49040');
+  });
+}
+function bush(x,y,s=1){
+  circle(x,y,6*s,'#60a020');
+  circle(x-3.5*s,y+2*s,4.5*s,'#509018');
+  circle(x+3.5*s,y+2*s,4.5*s,'#509018');
+  circle(x,y-2.5*s,5*s,'#78b830');
+}
+function flower(x,y,col='#f4d030'){
+  for(let i=0;i<5;i++){
+    const a=i/5*Math.PI*2;
+    circle(x+Math.cos(a)*3,y+Math.sin(a)*3,2.2,col);
+  }
+  circle(x,y,1.5,'#fffbe0');
+}
+function mushroom(x,y,s=1){
+  rrect(x-1.5*s,y,3*s,5*s,1,'#ddd0b0');
+  g.beginPath();g.arc(x,y,5*s,Math.PI,0);
+  g.fillStyle='#e04030';g.fill();
+  circle(x-1.8*s,y-2*s,1.2*s,'rgba(255,255,255,0.7)');
+}
+function building(x,y,w,h,roofCol,wallCol='#f0e8d0',wins=true,doorCol='#8a6840'){
+  g.save();g.globalAlpha=0.12;
+  g.beginPath();g.ellipse(x+w/2+3,y+h+4,w/2+2,5,0,0,Math.PI*2);
+  g.fillStyle='#000';g.fill();g.restore();
+  rrect(x,y,w,h,2,wallCol);
+  rrect(x-2,y-8,w+4,10,2,roofCol);
+  g.beginPath();g.moveTo(x+3,y-3);g.lineTo(x+w-3,y-3);
+  g.strokeStyle='rgba(0,0,0,0.15)';g.lineWidth=1;g.stroke();
+  if(wins){
+    rrect(x+3,y+3,6,6,1,'#90c8d8');
+    if(w>22)rrect(x+w-9,y+3,6,6,1,'#90c8d8');
+  }
+  g.beginPath();g.roundRect(x+w/2-3,y+h-10,6,10,1);
+  g.fillStyle=doorCol;g.fill();
+}
+function fog(x,y,s=1,alpha=0.86){
+  const blobs=[
+    [0,0,38,25],[28,-7,32,21],[-25,-5,29,19],[13,15,27,17],
+    [-13,17,25,15],[40,9,23,15],[-38,11,21,13],[19,-20,25,16],
+    [-18,-18,22,15],[0,-28,20,14],[32,-17,18,12],[-30,-15,16,11],
+    [50,2,18,12],[-50,5,16,11]
+  ];
+  g.save();g.globalAlpha=alpha;
+  blobs.forEach(([dx,dy,rx,ry])=>{
+    g.beginPath();g.ellipse(x+dx*s,y+dy*s,rx*s,ry*s,0,0,Math.PI*2);
+    g.fillStyle='#b4c8ac';g.fill();
+  });
+  [[0,-6,20,12],[22,-1,15,9],[-18,2,13,8]].forEach(([dx,dy,rx,ry])=>{
+    g.beginPath();g.ellipse(x+dx*s,y+dy*s,rx*s,ry*s,0,0,Math.PI*2);
+    g.fillStyle='#cce0c4';g.fill();
+  });
+  g.restore();
+}
+function stones(cx,cy,r,n=10){
+  for(let i=0;i<n;i++){
+    const a=i/n*Math.PI*2-Math.PI/2;
+    const px2=cx+Math.cos(a)*r, py2=cy+Math.sin(a)*r;
+    const rr=rnd(5,8);
+    g.save();g.globalAlpha=0.82;
+    g.beginPath();g.ellipse(px2,py2,rr,rr*0.65,0,0,Math.PI*2);
+    g.fillStyle='#c8b888';g.fill();g.restore();
+  }
+}
+
+// ══════════════════
+// DRAW
+// ══════════════════
+
+// 1. TEAL WATER BACKGROUND
+g.fillStyle='#7ecfcf';
+g.fillRect(0,0,W,H);
+g.save();g.strokeStyle='#a8e4e4';g.lineWidth=1.5;g.globalAlpha=0.3;
+for(let i=0;i<W;i+=20){
+  g.beginPath();g.moveTo(i,0);g.bezierCurveTo(i+5,H*0.3,i-5,H*0.6,i+3,H);g.stroke();
+}
+g.restore();
+
+// 2. GREAT SALT LAKE (west — real presence beyond I-15)
+g.save();
+g.beginPath();
+g.moveTo(0,0);
+g.lineTo(px(0.06),0);
+g.bezierCurveTo(px(0.08),H*0.2, px(0.04),H*0.4, px(0.07),H*0.6);
+g.bezierCurveTo(px(0.05),H*0.8, px(0.07),H*0.9, px(0.05),H);
+g.lineTo(0,H);g.closePath();
+g.fillStyle='#68c4d0';g.fill();
+// shimmer
+g.strokeStyle='#a0dcec';g.lineWidth=1.5;g.globalAlpha=0.45;
+for(let ly=30;ly<H;ly+=22){
+  g.beginPath();g.moveTo(0,ly);g.bezierCurveTo(18,ly-2,36,ly+2,54,ly);g.stroke();
+}
+g.restore();
+// marsh grasses
+for(let i=0;i<10;i++){
+  const mx=rnd(px(0.06),px(0.10)), my=rnd(80,H-120);
+  g.fillStyle='#5a9030';
+  g.fillRect(mx,my,2.5,10);g.fillRect(mx+5,my+3,2,7);
+}
+lbl('Great Salt\nLake',px(0.03),H/2-10,7,'#1a7080');
+lbl('🦆',px(0.03),H/2+8,13,'#1a7080');
+
+// 3. ORGANIC LANDMASS
+// Follows city shape: tight right (mountains), irregular west/northwest
+g.save();
+g.beginPath();
+// start top-left area (northwest of city, west of 500W curve)
+g.moveTo(px(0.09), py(0.08));
+// top edge — slightly wavy heading east
+g.bezierCurveTo(px(0.20),py(0.06), px(0.40),py(0.05), px(0.60),py(0.06));
+g.bezierCurveTo(px(0.68),py(0.06), px(0.72),py(0.07), px(0.74),py(0.08));
+// NE corner — Hwy 13 area, golf club bulge
+g.bezierCurveTo(px(0.78),py(0.08), px(0.84),py(0.09), px(0.88),py(0.12));
+// east edge — tight foothills
+g.bezierCurveTo(px(0.92),py(0.15), px(0.90),py(0.25), px(0.92),py(0.35));
+g.bezierCurveTo(px(0.93),py(0.45), px(0.91),py(0.55), px(0.93),py(0.65));
+g.bezierCurveTo(px(0.93),py(0.75), px(0.91),py(0.85), px(0.90),py(0.95));
+// south edge
+g.bezierCurveTo(px(0.80),py(0.97), px(0.60),py(0.98), px(0.50),py(0.97));
+g.bezierCurveTo(px(0.35),py(0.98), px(0.20),py(0.97), px(0.12),py(0.95));
+// west edge back up — I-15 / Parkinson area
+g.bezierCurveTo(px(0.09),py(0.88), px(0.08),py(0.75), px(0.09),py(0.62));
+g.bezierCurveTo(px(0.09),py(0.50), px(0.08),py(0.38), px(0.09),py(0.25));
+g.bezierCurveTo(px(0.09),py(0.16), px(0.09),py(0.10), px(0.09),py(0.08));
+g.closePath();
+// AC grass fill
+g.fillStyle='#a8cc68';g.fill();
+// sandy shore
+g.strokeStyle='#d8c880';g.lineWidth=10;g.stroke();
+g.strokeStyle='#c8b868';g.lineWidth=3;g.stroke();
+g.restore();
+
+// grass variation
+[[px(0.25),py(0.28),100,75,'#98bc58',0.25],[px(0.55),py(0.50),85,65,'#98b450',0.2],
+ [px(0.40),py(0.70),90,60,'#b4d068',0.18],[px(0.20),py(0.60),70,50,'#98bc58',0.18],
+ [px(0.65),py(0.30),75,55,'#b4d068',0.18]
+].forEach(([cx,cy,rx,ry,col,a])=>{
+  g.save();g.globalAlpha=a;
+  g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+  g.fillStyle=col;g.fill();g.restore();
+});
+
+// 4. MOUNTAINS (east)
+poly([[px(0.90),0],[W,0],[W,H],[px(0.90),H]],'#a0b870');
+const mp1=[[px(0.90),0]];
+for(let yy=0;yy<=H;yy+=32){mp1.push([px(0.90)+rnd(5,28),yy],[px(0.90)+rnd(12,40),yy+16]);}
+mp1.push([W,H],[W,0]);
+poly(mp1,'#90a860');
+const mp2=[[px(0.92),0]];
+for(let yy=0;yy<=H;yy+=24){mp2.push([px(0.92)+rnd(10,38),yy],[px(0.92)+rnd(18,50),yy+12]);}
+mp2.push([W,H],[W,0]);
+poly(mp2,'#a8c078',0.55);
+// snow
+[[px(0.91)+10,py(0.06)],[px(0.91)+22,py(0.20)],[px(0.91)+12,py(0.36)],
+ [px(0.91)+24,py(0.52)],[px(0.91)+10,py(0.68)],[px(0.91)+20,py(0.84)]
+].forEach(([sx,sy])=>{
+  poly([[sx,sy],[sx-8,sy+18],[sx+10,sy+16]],'rgba(255,255,255,0.65)');
+});
+lbl('⛰ Wellsville\nMtns',px(0.96),H/2,8,'#3a5820');
+
+// 5. WILLARD BAY (south, outside city)
+g.save();
+g.beginPath();g.ellipse(px(0.40),H+16,px(0.22),28,-0.05,0,Math.PI*2);
+g.fillStyle='#68c4d0';g.fill();
+g.strokeStyle='#c8f0f8';g.lineWidth=8;g.stroke();
+g.globalAlpha=0.5;g.strokeStyle='#a0d8e8';g.lineWidth=3;g.stroke();
+for(let i=0;i<4;i++){
+  g.beginPath();
+  g.moveTo(px(0.22)+i*20,H-18);g.bezierCurveTo(px(0.28)+i*18,H-21,px(0.34)+i*16,H-15,px(0.40)+i*14,H-18);
+  g.stroke();
+}
+g.restore();
+lbl('🎣 Willard Bay',px(0.40),H-6,8,'#1a7080');
+
+// 6. I-15 (western edge)
+g.save();
+g.beginPath();g.moveTo(px(0.09),py(0.07));g.lineTo(px(0.09),py(0.96));
+g.strokeStyle='#9a9880';g.lineWidth=10;g.lineCap='round';g.stroke();
+g.strokeStyle='#e0d8c0';g.lineWidth=2.5;g.setLineDash([12,8]);g.stroke();
+g.setLineDash([]);g.restore();
+rrect(px(0.09)-12,H/2-9,24,18,3,'#3060a0');
+lbl('15',px(0.09),H/2+1,8,'white');
+
+// 7. HWY 13 — curves in from top-right, sweeps down toward Main
+// From reference: enters top-right ~85% x, curves down/left to join Main ~900N level
+g.save();
+g.beginPath();
+g.moveTo(px(0.92),py(0.08));  // top right entrance
+g.bezierCurveTo(px(0.86),py(0.10), px(0.82),py(0.12), px(0.76),py(0.13));
+g.bezierCurveTo(px(0.75),py(0.13), xMain,py(0.14), xMain,y900N);
+g.strokeStyle='#c0a870';g.lineWidth=9;g.lineCap='round';g.stroke();
+g.strokeStyle='#e8d8a8';g.lineWidth=2.5;g.setLineDash([9,6]);g.stroke();
+g.setLineDash([]);g.restore();
+// golf club green patch (top right)
+g.save();g.globalAlpha=0.55;
+g.beginPath();g.ellipse(px(0.84),py(0.08),36,20,0,0,Math.PI*2);
+g.fillStyle='#68a830';g.fill();g.restore();
+lbl('golf',px(0.84),py(0.08),6,'#3a5010');
+lbl('Hwy 13',px(0.86),py(0.115),6.5,'#5a4020');
+
+// 8. STREETS — exactly from reference
+// Draw minor streets first, then majors on top
+
+// helper: horizontal street
+function sH(y2,w=5,col='#c8b070'){
+  g.save();g.beginPath();g.moveTo(px(0.09),y2);g.lineTo(px(0.92),y2);
+  g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.stroke();g.restore();
+}
+// helper: vertical street (full height unless clipped)
+function sV(x2,yFrom,yTo,w=5,col='#c8b070'){
+  g.save();g.beginPath();g.moveTo(x2,yFrom);g.lineTo(x2,yTo);
+  g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.stroke();g.restore();
+}
+
+// E-W streets (exact from reference, top to bottom)
+sH(y900N,5,'#c0a868');  // 900 N
+sH(y800N,5,'#c0a868');  // 800 N
+sH(y750N,4,'#c8b070');  // 750 N
+sH(y700N,5,'#c0a868');  // 700 N
+// 650N only exists east of ~500W in reference
+g.save();g.beginPath();g.moveTo(x500W_btm,y650N);g.lineTo(px(0.92),y650N);
+g.strokeStyle='#c8b070';g.lineWidth=4;g.stroke();g.restore();
+sH(y600N,5,'#c0a868');  // 600 N
+sH(y500N,6,'#b8a060');  // 500 N (major — creek runs along here)
+sH(y400N,5,'#c0a868');  // 400 N
+sH(y325N,4,'#c8b070');  // 325 N
+sH(y300N,5,'#c0a868');  // 300 N
+
+// N-S streets
+// Parkinson Dr (far west, only exists south section, curves)
+g.save();
+g.beginPath();
+g.moveTo(xParkinson,y600N+10);
+g.bezierCurveTo(xParkinson,y500N, xParkinson-5,y400N, xParkinson,y300N);
+g.strokeStyle='#c8b070';g.lineWidth=4;g.lineCap='round';g.stroke();
+g.restore();
+
+// 600W
+sV(x600W,y900N,y300N,4,'#c8b070');
+
+// 500W — straight from bottom to ~700N, then curves NW
+g.save();
+g.beginPath();
+g.moveTo(x500W_btm,py(0.96)); // bottom
+g.lineTo(x500W_btm,y700N+10); // straight section
+g.bezierCurveTo(x500W_btm,y700N-10, x500W_750N,y750N, x500W_750N,y750N);
+g.bezierCurveTo(x500W_750N,y750N-5, x500W_800N,y800N-5, x500W_800N,y800N-5);
+g.bezierCurveTo(x500W_800N,y800N-15, x500W_900N,y900N, x500W_900N,y900N-5);
+g.bezierCurveTo(x500W_900N,py(0.07), px(0.215),py(0.06), px(0.22),py(0.07));
+g.strokeStyle='#c0a868';g.lineWidth=7;g.lineCap='round';g.stroke();
+g.restore();
+
+// N 200 W (short, only between 750N and 900N per reference)
+g.save();
+g.beginPath();
+g.moveTo(px(0.555),y750N);g.lineTo(px(0.555),y900N+5);
+g.strokeStyle='#c8b070';g.lineWidth=4;g.stroke();
+// W 825 N stub
+g.moveTo(px(0.555),py(0.185));g.lineTo(px(0.64),py(0.185));
+g.stroke();
+g.restore();
+
+// 400W
+sV(x400W,py(0.07),py(0.96),5,'#c0a868');
+// 300W
+sV(x300W,py(0.07),py(0.96),5,'#c0a868');
+// 100W
+sV(x100W,py(0.07),py(0.96),5,'#c0a868');
+// 100E
+sV(x100E,y700N,py(0.96),5,'#c0a868');  // starts at 700N per reference
+// 200E (right side, partial)
+sV(x200E,y600N,py(0.96),4,'#c8b070');
+
+// FOREST ST (major E-W — this is the main cross street)
+// In Brigham City Forest St runs at about 200N area but reference doesn't show it by that name
+// The reference shows 500N as the major horizontal with the creek
+// Forest St is actually the downtown main cross — let's use 500N level as the visual major
+// (Main×Forest is the downtown intersection)
+const yForestSt = y500N; // Forest St aligns with 500N in the reference view
+g.save();
+g.beginPath();g.moveTo(px(0.09),yForestSt);g.lineTo(px(0.92),yForestSt);
+g.strokeStyle='#a89050';g.lineWidth=13;g.lineCap='round';g.stroke();
+g.strokeStyle='#dcc888';g.lineWidth=5;g.stroke();
+g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=1.5;g.setLineDash([10,8]);g.stroke();
+g.setLineDash([]);g.restore();
+
+// MAIN STREET (major N-S)
+g.save();
+g.beginPath();g.moveTo(xMain,py(0.07));g.lineTo(xMain,py(0.96));
+g.strokeStyle='#a89050';g.lineWidth=13;g.lineCap='round';g.stroke();
+g.strokeStyle='#dcc888';g.lineWidth=5;g.stroke();
+g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=1.5;g.setLineDash([10,8]);g.stroke();
+g.setLineDash([]);g.restore();
+
+// STREET LABELS (small, AC style, matching reference)
+const ewLabels=[
+  [y900N,'900 N'],[y800N,'800 N'],[y750N,'750 N'],
+  [y700N,'700 N'],[y600N,'600 N'],[y500N,'500 N'],
+  [y400N,'400 N'],[y325N,'325 N'],[y300N,'300 N'],
+];
+ewLabels.forEach(([y2,name])=>{
+  g.save();g.font='600 6px Helvetica,sans-serif';g.fillStyle='#7a5a38';
+  g.textAlign='right';g.textBaseline='middle';
+  g.shadowColor='rgba(255,255,255,0.8)';g.shadowBlur=3;
+  g.fillText(name,px(0.09)-3,y2);g.restore();
+});
+// also east labels
+[y900N,y800N,y700N,y600N,y500N,y400N,y300N].forEach((y2,i)=>{
+  const names=['E 900 N','E 800 N','E 700 N','E 600 N','E 500 N','E 400 N','E 300 N'];
+  g.save();g.font='600 6px Helvetica,sans-serif';g.fillStyle='#7a5a38';
+  g.textAlign='left';g.textBaseline='middle';
+  g.shadowColor='rgba(255,255,255,0.8)';g.shadowBlur=3;
+  g.fillText(names[i],px(0.92)+3,y2);g.restore();
+});
+
+const nsLabels=[
+  [x600W,'600 W'],[x500W_btm,'500 W'],[x400W,'400 W'],
+  [x300W,'300 W'],[x100W,'100 W'],[x100E,'100 E'],[x200E,'200 E'],
+];
+nsLabels.forEach(([x2,name])=>{
+  g.save();g.font='600 6px Helvetica,sans-serif';g.fillStyle='#7a5a38';
+  g.textAlign='center';g.textBaseline='top';
+  g.shadowColor='rgba(255,255,255,0.8)';g.shadowBlur=3;
+  g.fillText(name,x2,py(0.96)+2);g.restore();
+});
+
+lbl('N Main St',xMain+22,py(0.50),8,'#3a2415');
+lbl('Forest St',px(0.10),yForestSt-10,7,'#3a2415','left');
+
+// 9. BOX ELDER CREEK
+// Enters east edge ~500N, flows WNW, exits west ~500N level
+g.save();
+g.beginPath();
+g.moveTo(px(0.93),py(0.640));        // enters east at ~500N
+g.bezierCurveTo(
+  px(0.88),py(0.642),
+  px(0.85),py(0.645),
+  px(0.818),py(0.650)
+);
+g.bezierCurveTo(
+  px(0.78),py(0.655),
+  px(0.75),py(0.658),
+  xMain,py(0.662)                    // crosses Main ~500N
+);
+g.bezierCurveTo(
+  px(0.70),py(0.665),
+  px(0.65),py(0.663),
+  px(0.60),py(0.660)
+);
+g.bezierCurveTo(
+  px(0.50),py(0.655),
+  px(0.40),py(0.650),
+  px(0.30),py(0.645)
+);
+g.bezierCurveTo(
+  px(0.20),py(0.640),
+  px(0.14),py(0.638),
+  px(0.09),py(0.636)                 // exits west
+);
+g.strokeStyle='#60b0c8';g.lineWidth=9;g.lineCap='round';g.stroke();
+g.strokeStyle='#a8dcea';g.lineWidth=3.5;g.globalAlpha=0.65;g.stroke();
+g.globalAlpha=0.3;g.strokeStyle='#d8f2fc';g.lineWidth=1.5;g.stroke();
+g.restore();
+lbl('Box Elder Creek',px(0.62),py(0.625),6,'#1a7080');
+
+// 10. SNOW PARK — east of Main at 500N
+rrect(xMain+5,y500N-11,26,20,3,'#70a830');
+g.save();g.strokeStyle='#509020';g.lineWidth=1.5;
+g.beginPath();g.roundRect(xMain+5,y500N-11,26,20,3);g.stroke();g.restore();
+lbl('snow\npark',xMain+18,y500N+14,5.5,'#3a5010');
+
+// 11. STONE PATH INTERSECTION (Main × Forest)
+stones(xMain,yForestSt,34,12);
+
+// 12. ORCHARD (northwest — west of 500W, north of 800N)
+g.save();
+g.beginPath();g.ellipse(px(0.17),py(0.25),70,55,0,0,Math.PI*2);
+g.fillStyle='#80b840';g.globalAlpha=0.45;g.fill();g.restore();
+[
+  [px(0.12),py(0.17)],[px(0.16),py(0.16)],[px(0.20),py(0.17)],[px(0.24),py(0.16)],
+  [px(0.12),py(0.22)],[px(0.16),py(0.21)],[px(0.20),py(0.22)],[px(0.24),py(0.21)],[px(0.28),py(0.22)],
+  [px(0.13),py(0.27)],[px(0.17),py(0.26)],[px(0.21),py(0.27)],[px(0.25),py(0.26)],
+  [px(0.14),py(0.32)],[px(0.18),py(0.31)],[px(0.22),py(0.32)],[px(0.26),py(0.31)],
+].forEach(([tx,ty])=>peachTree(tx,ty,0.50));
+lbl('🍑 orchards',px(0.17),py(0.36),7,'#3a5010');
+
+// 13. BUILDINGS (positioned at real street intersections)
+
+// TEMPLE (Main & ~700N east side)
+building(xMain+8,y700N-14,28,22,'#c8c090','#f0e8d0',true,'#8a6840');
+g.fillStyle='#b8a870';g.fillRect(xMain+20,y700N-24,4,12);
+poly([[xMain+22,y700N-28],[xMain+16,y700N-12],[xMain+28,y700N-12]],'#c8b880');
+lbl('temple',xMain+22,y700N+16,7,'#5a3e26');
+
+// TABERNACLE (100W & ~700N)
+building(x100W-14,y700N-12,26,20,'#8aaa60','#eee8d8',true,'#6a8a40');
+g.fillStyle='#7a9a50';g.fillRect(x100W-2,y700N-22,4,12);
+circle(x100W,y700N-24,4,'#8aaa60');
+lbl('tabernacle',x100W,y700N+16,7,'#5a3e26');
+
+// TRAIN DEPOT (east of Main, Forest St level)
+building(x100E-18,yForestSt-16,36,26,'#c4a850','#dcc898',true,'#7a5830');
+rrect(x100E-20,yForestSt+8,40,7,1,'#b8a870');
+g.save();g.strokeStyle='#8a6840';g.lineWidth=2;g.globalAlpha=0.38;
+g.beginPath();g.moveTo(x100E-20,yForestSt+13);g.lineTo(x100E+20,yForestSt+13);
+g.moveTo(x100E-20,yForestSt+16);g.lineTo(x100E+20,yForestSt+16);
+g.stroke();g.restore();
+lbl('🚂 depot',x100E,yForestSt+24,7,'#5a3e26');
+
+// MUSEUM (west of Main, Forest St level, ~300W)
+building(x300W-16,yForestSt-14,32,24,'#7aaa50','#d8ecb8',true,'#5a7a30');
+g.save();g.strokeStyle='#b0dc98';g.lineWidth=2;g.globalAlpha=0.4;
+[-10,-2,6,14].forEach(dx=>{
+  g.beginPath();g.moveTo(x300W+dx,yForestSt-14);g.lineTo(x300W+dx,yForestSt+10);g.stroke();
+});g.restore();
+lbl('🏛️ museum',x300W,yForestSt+18,7,'#5a3e26');
+
+// COURTHOUSE (Main & ~400N)
+building(xMain+6,y400N-12,36,24,'#c8b880','#ecdcbc',true,'#7a5830');
+g.save();g.strokeStyle='#c8b898';g.lineWidth=2;g.globalAlpha=0.38;
+[-8,0,8,16].forEach(dx=>{
+  g.beginPath();g.moveTo(xMain+6+14+dx,y400N-12);g.lineTo(xMain+6+14+dx,y400N+12);g.stroke();
+});g.restore();
+lbl('courthouse',xMain+24,y400N+18,7,'#5a3e26');
+
+// B&B BILLIARDS (west of Main, Forest St)
+building(x300W+30,yForestSt-12,20,18,'#8858a8','#ceb0d8',false,'#5a3878');
+g.save();g.globalAlpha=0.18;
+g.beginPath();g.ellipse(x300W+40,yForestSt-12,12,3,0,0,Math.PI*2);
+g.fillStyle='#c090e0';g.fill();g.restore();
+lbl('🎱 B&B',x300W+40,yForestSt+13,7,'#5a3e26');
+
+// REES PIONEER PARK (east of Main, ~Forest St)
+g.save();
+g.beginPath();g.ellipse(x100E+24,yForestSt+20,34,25,0,0,Math.PI*2);
+g.fillStyle='#70b030';g.fill();
+g.beginPath();g.ellipse(x100E+24,yForestSt+22,14,9,0,0,Math.PI*2);
+g.fillStyle='#68c4d0';g.fill();
+g.globalAlpha=0.35;
+g.beginPath();g.ellipse(x100E+24,yForestSt+22,10,6,0,0,Math.PI*2);
+g.fillStyle='#a0dce8';g.fill();g.restore();
+rrect(x100E+17,yForestSt+18,14,5,1,'#c8a870',0.75);
+tree(x100E+4,yForestSt+8,0.5,'#58a028','#409020','#78b840');
+tree(x100E+44,yForestSt+8,0.45,'#509028','#388018','#68b038');
+lbl('🦆 rees pk',x100E+24,yForestSt+50,7,'#3a5010');
+
+// ARCH on Main St (between 600N and 700N per reference)
+const archY=y600N+py(0.06);
+g.save();
+g.beginPath();g.arc(xMain,archY,17,Math.PI,0);
+g.strokeStyle='#d4a030';g.lineWidth=4;g.stroke();
+g.beginPath();
+g.moveTo(xMain-17,archY);g.lineTo(xMain-17,archY+10);
+g.moveTo(xMain+17,archY);g.lineTo(xMain+17,archY+10);
+g.strokeStyle='#d4a030';g.lineWidth=3;g.stroke();
+[0.15,0.35,0.5,0.65,0.85].forEach(t=>{
+  const a=Math.PI+t*Math.PI;
+  const bx=xMain+Math.cos(a)*17,by=archY+Math.sin(a)*17;
+  circle(bx,by,2.5,'#ffe060');
+  circle(bx,by,1.5,'#fff8a0');
+  g.save();g.globalAlpha=0.18;circle(bx,by,5,'#ffe060');g.restore();
+});
+g.restore();
+lbl('⭐ the arch',xMain,archY-10,7,'#9a7020');
+
+// YOUR HOUSE (263 W 800 N)
+// 263W = between 200W and 300W closer to 300W → ~x300W - small offset
+// 800N → y800N
+const houseX = x300W+px(0.04), houseY = y800N;
+building(houseX-14,houseY-18,28,22,'#e060a0','#fff0f8',true,'#a03080');
+[[-8,10],[0,13],[8,10],[-5,17],[5,17]].forEach(([dx,dy])=>flower(houseX+dx,houseY+dy,'#f070b0'));
+rrect(houseX-40,houseY-40,80,16,4,'rgba(255,255,255,0.92)');
+g.save();g.strokeStyle='#c05080';g.lineWidth=1.5;
+g.beginPath();g.roundRect(houseX-40,houseY-40,80,16,4);g.stroke();g.restore();
+lbl('🏠 your house',houseX,houseY-32,8,'#c05080');
+
+// 14. TREES
+const treeCols=[['#58a028','#3a8018','#70b840'],['#509028','#388018','#68b038'],['#609030','#408020','#78b848']];
+[
+  // west of I-15 / parkinson
+  [px(0.10),py(0.14)],[px(0.10),py(0.30)],[px(0.10),py(0.45)],[px(0.10),py(0.58)],[px(0.10),py(0.72)],[px(0.10),py(0.85)],
+  // northwest orchard surrounds
+  [px(0.08),py(0.18)],[px(0.08),py(0.28)],[px(0.08),py(0.38)],
+  [px(0.30),py(0.16)],[px(0.34),py(0.20)],[px(0.30),py(0.28)],
+  // east side
+  [px(0.87),py(0.18)],[px(0.87),py(0.32)],[px(0.87),py(0.46)],[px(0.87),py(0.60)],[px(0.87),py(0.74)],[px(0.87),py(0.88)],
+  // south
+  [px(0.20),py(0.90)],[px(0.35),py(0.92)],[px(0.50),py(0.90)],[px(0.65),py(0.92)],
+  // scattered mid
+  [px(0.15),py(0.55)],[px(0.15),py(0.68)],[px(0.42),py(0.45)],[px(0.56),py(0.38)],
+].forEach(([tx,ty],i)=>tree(tx,ty,0.55+rnd(0,0.2),...treeCols[i%3]));
+
+// bushes
+[[px(0.22),py(0.55)],[px(0.38),py(0.60)],[px(0.55),py(0.52)],
+ [px(0.20),py(0.78)],[px(0.45),py(0.82)],[px(0.65),py(0.58)]
+].forEach(([x,y])=>bush(x,y,0.7));
+
+// flowers
+[[px(0.25),py(0.42),'#f4d030'],[px(0.40),py(0.38),'#f07090'],
+ [px(0.60),py(0.45),'#a070e0'],[px(0.30),py(0.68),'#f4d030'],
+ [px(0.50),py(0.72),'#f07090'],[px(0.70),py(0.65),'#f4d030'],
+].forEach(([x,y,col])=>flower(x,y,col));
+
+// mushrooms
+[[px(0.20),py(0.62)],[px(0.55),py(0.55)],[px(0.38),py(0.74)],[px(0.65),py(0.72)]
+].forEach(([x,y])=>mushroom(x,y,0.7));
+
+// 15. MYSTERY FOG ZONES
+fog(px(0.05),py(0.75),0.80,0.78);
+lbl('???',px(0.05),py(0.75)+44,7,'#7a8870');
+
+fog(px(0.30),py(0.04),0.78,0.75);
+lbl('???',px(0.30),py(0.04)+44,7,'#7a8870');
+
+fog(px(0.65),py(0.04),0.75,0.73);
+lbl('???',px(0.65),py(0.04)+42,7,'#7a8870');
+
+fog(px(0.25),py(0.96),0.78,0.76);
+lbl('???',px(0.25),py(0.96)-2,7,'#7a8870');
+
+fog(px(0.96),py(0.45),0.80,0.74);
+lbl('???',px(0.96),py(0.45)+44,7,'#7a8870');
+
+// 16. COMPASS
+const crx=W-36,cry=H-36;
+circle(crx,cry,24,'#f5ecd0',0.95);
+g.save();g.strokeStyle='#8b6343';g.lineWidth=2;
+g.beginPath();g.arc(crx,cry,24,0,Math.PI*2);g.stroke();
+poly([[crx,cry-20],[crx-4,cry-8],[crx,cry-12],[crx+4,cry-8]],'#c0392b');
+poly([[crx,cry+20],[crx-4,cry+8],[crx,cry+12],[crx+4,cry+8]],'#8a7a6a');
+g.restore();
+lbl('N',crx,cry-12,8,'#c0392b');
+lbl('S',crx,cry+14,7,'#8a7a6a');
+lbl('W',crx-12,cry,7,'#8a7a6a');
+lbl('E',crx+12,cry,7,'#8a7a6a');
+
+// 17. TITLE
+rrect(10,10,162,28,6,'#f5ecd0',0.95);
+g.save();g.strokeStyle='#8b6343';g.lineWidth=2;
+g.beginPath();g.roundRect(10,10,162,28,6);g.stroke();g.restore();
+lbl('🍑 Peach Town',91,24,11,'#3a2415');
+
+g.save();g.font='500 7px sans-serif';g.fillStyle='rgba(50,30,10,0.35)';
+g.textAlign='right';g.textBaseline='bottom';
+g.fillText('© OpenStreetMap contributors',W-6,H-4);g.restore();
+</script>
+</body>
+</html>
