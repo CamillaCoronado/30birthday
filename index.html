@@ -8,13 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3a2415;background:#4a8aaa}
-#map{position:fixed;inset:0;z-index:1}
-.leaflet-container{background:#7ecfcf;cursor:grab}
+html,body{height:100%;display:flex;flex-direction:column;overflow:hidden;font-family:'Nunito',sans-serif;color:#3a2415;background:#f5ecd0}
+#header{flex-shrink:0;background:#f5ecd0;text-align:center;padding:10px 16px 6px;border-bottom:2px solid #d4b896}
+.hfloat{font-size:22px;display:block;animation:bob 3s ease-in-out infinite;margin-bottom:3px;line-height:1}
+.sign-post{display:inline-block;position:relative;padding-bottom:12px}
+.sign-post::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:6px;height:13px;background:#7d5a3c;border-radius:2px}
+.sign-board{background:#f5ecd0;border:2.5px solid #7d5a3c;border-radius:8px;padding:5px 20px 4px;box-shadow:0 3px 0 #5a3e26}
+.sign-board h1{font-size:clamp(15px,4vw,22px);font-weight:900;color:#3a2415;line-height:1;margin:0}
+.sign-board h1 span{color:#4a7c2f}
+.sign-board p{font-size:9px;color:#8a6a4a;margin:2px 0 0;font-style:italic;font-family:'Libre Baskerville',serif}
+#map{flex:1;min-height:0;position:relative;z-index:1}
+.leaflet-container{background:#f5ecd0;cursor:grab}
 .leaflet-container:active{cursor:grabbing}
 .leaflet-control-zoom a{font-family:'Nunito',sans-serif!important;font-weight:900!important;color:#3a2415!important;background:#f5ead0!important}
 .leaflet-control-zoom{border:2px solid #8b6343!important;border-radius:6px!important;box-shadow:2px 2px 0 #5a3e26!important}
-
 
 /* toast */
 @keyframes slideDown{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -84,8 +91,17 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3a2
 </head>
 <body>
 
-<div id="map"></div>
+<div id="header">
+  <span class="hfloat">🍑</span>
+  <div class="sign-post">
+    <div class="sign-board">
+      <h1><span>Peach Town</span> · Camilla's Map</h1>
+      <p>may 8th · your 30th birthday · brigham city, utah</p>
+    </div>
+  </div>
+</div>
 
+<div id="map"></div>
 
 <!-- toast -->
 <div id="toast"><div id="ti">🌿</div><div id="tt"></div></div>
@@ -111,13 +127,12 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#3a2
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const STOPS=[
-  {id:0,icon:'🌅',name:'Peaceful Waters',tag:'🚗 10 min drive south · willard bay',desc:'oh, you haven\'t been to willard bay yet?! it\'s just a short drive south of town! the water is so calm and clear in the morning, and all sorts of birds come to visit. it\'s been here your whole time in town and i think it\'s been waiting for you to come say hello!',task:'📍 APPROACH the water\'s edge. SPEAK ALOUD one thing you\'re leaving behind in your 20s. The herons have a 5-star discretion rating.',unlock:'🔓 peaceful waters has been added to your map!'},
-  {id:1,icon:'🚂',name:'The Old Train Station',tag:'🚶 walkable · forest st · open fri 2–6pm',desc:'wow, this building has been here since 1907! back in the old days, the whole town would bring their peaches and cherries here to be loaded onto trains and sent all over the country. the trains don\'t stop here anymore, but the building is still just as lovely. i think the history is kind of soaked into the walls!',task:'🔍 SEARCH the depot for one thing that surprises you. EXAMINE it. PHOTOGRAPH it. Explorers who skip this step lose 50 XP.',unlock:'🔓 the train depot has been added to your map!'},
-  {id:2,icon:'🔍',name:'The Secret in the Wall',tag:'🚶 walkable · main street',desc:'there\'s a plaque on main street marking where the old cooperative store used to be, but if you look very carefully at the brickwork right next to it, you can still see the outline of the original building! it\'s been gone for over a hundred years but it\'s still kind of... there! like a little ghost!',task:'👁️ LOCATE the ghost outline hidden in the brickwork — it\'s been hiding in plain sight for 100+ years. PHOTOGRAPH the evidence before it vanishes.',unlock:'🔓 the secret in the wall has been added to your map!'},
-  {id:3,icon:'🏛️',name:'The Museum With 12,000 Things In It',tag:'🚶 walkable · forest street · free',desc:'did you know we have a museum right here on forest street?! and it\'s completely free! it has fossils and crystals and pioneer artifacts and a room that glows under black light. it\'s in an old school building and some of the things inside have just been sitting there quietly for a hundred and fifty years!',task:'🏺 FIND the one exhibit that gives you a feeling you can\'t name. STAND before it for a full 60 seconds. PHOTOGRAPH it. No caption required.',unlock:'🔓 the museum has been added to your map!'},
-  {id:4,icon:'🦆',name:'The Duck Pond',tag:'🚶 walkable · forest street · rees pioneer park',desc:'rees pioneer park is one of my very favorite spots in town! there\'s a little bridge and a fountain and ducks who are very friendly if you approach them calmly. residents have been sitting on these benches since before utah was even a state, which i find very comforting somehow!',task:'🦆 SIT on a bench. OPEN your notes app. WRITE 3 things you genuinely want to do this summer (wants, not shoulds). Screenshot = officially unlocked.',unlock:'🔓 the duck pond has been added to your map!'},
-  {id:5,icon:'⭐',name:'The Big Glowing Arch',tag:'🚶 walkable · main street',desc:'the gateway arch has three hundred and fifty light bulbs in it! the townspeople paid for it themselves back in 1908 because they wanted main street to glow, which i think is just the loveliest reason to do something. it still lights up! you\'ve probably walked right under it without really looking! today you should look!',task:'⭐ STAND directly beneath the arch. LOOK UP. SUMMON a party member to photograph you with your flowers. This is the birthday cutscene.',unlock:'🔓 the arch has been added to your map!'},
-  {id:6,icon:'🎱',name:'The Tavern — You Made It!!',tag:'🚶 walkable · 21 w forest st',desc:'oh, b&b billiards!! did you know it\'s been here since 1903?! that\'s older than the arch and older than the train station! it has seen every single kind of night this town has ever had, and tonight it gets to see yours! you explored your whole town today! you found things most residents never look for!',task:'🎱 FINAL BOSS UNLOCKED. When asked your age tonight: say THIRTY. No hesitation. Full confidence. Then order whatever you want. You\'ve cleared the map.',unlock:'🔓 b&b billiards has been added to your map! 🎉'},
+  {id:0,icon:'🚂',name:'The Old Train Station',tag:'🚶 833 W Forest St · open fri 2 to 6pm',desc:'this building has been here since 1907. back in the old days, the whole town would bring their peaches and cherries here to be loaded onto trains and sent all over the country. the trains don\'t stop here anymore, but the building is still just as lovely.',task:'find one thing inside that surprises you and take a photo of it.',unlock:'🔓 the train depot has been added to your map!'},
+  {id:1,icon:'🔍',name:'The Secret in the Wall',tag:'🚶 5 N Main Street',desc:'there\'s a plaque on main street marking where the old cooperative store used to be, but if you look carefully at the brickwork right next to it, you can still see the outline of the original building. it\'s been gone for over a hundred years but it\'s still kind of... there. like a little ghost.',task:'find the ghost outline in the brickwork next to the plaque. it\'s easy to walk right past. take a photo when you find it.',unlock:'🔓 the secret in the wall has been added to your map!'},
+  {id:2,icon:'🏛️',name:'The Museum With 12,000 Things In It',tag:'🚶 24 N 300 W · basement · free',desc:'did you know we have a museum right here on forest street? it\'s completely free and has fossils, crystals, pioneer artifacts, and a room that glows under black light. it\'s in an old school building and some of the things inside have just been sitting there quietly for a hundred and fifty years.',task:'take a picture of the oldest thing you can find.',unlock:'🔓 the museum has been added to your map!'},
+  {id:3,icon:'🦆',name:'The Duck Pond',tag:'🚶 800 W Forest St · rees pioneer park',desc:'rees pioneer park is one of my favorite spots in town. there\'s a little bridge and a fountain and ducks who are very friendly if you approach them calmly. residents have been sitting on these benches since before utah was even a state, which i find very comforting.',task:'sit on a bench and write down three things you genuinely want to do before you turn 31. not things you should do, things you actually want.',unlock:'🔓 the duck pond has been added to your map!'},
+  {id:4,icon:'⭐',name:'The Big Glowing Arch',tag:'🚶 50 UT-13',desc:'the gateway arch has three hundred and fifty light bulbs in it. the townspeople paid for it themselves back in 1908 because they wanted main street to glow, which is just the loveliest reason to do something. it still lights up! you\'ve probably walked right under it without really looking.',task:'stand directly underneath and look up. get someone to take a photo of you there.',unlock:'🔓 the arch has been added to your map!'},
+  {id:5,icon:'🎱',name:'The Tavern, You Made It!!',tag:'🚶 walkable · 21 w forest st',desc:'oh, b&b billiards! did you know it\'s been here since 1903? that\'s older than the arch and the train station. it has seen every kind of night this town has ever had, and tonight it gets to see yours.',task:'',unlock:'🔓 b&b billiards has been added to your map! 🎉'},
 ];
 
 // ─────────────────────────────────────────────
@@ -146,13 +161,12 @@ const y400N=py(0.735),y325N=py(0.815),y300N=py(0.865);
 
 // stop canvas positions [x,y] matching peach-town-map layout
 const SXY=[
-  [px(0.40),H-10],           // 0 Willard Bay (south edge)
-  [x100E,yForestSt],         // 1 Train Depot
-  [xMain,yForestSt+46],      // 2 Co-op ghost
-  [x300W,yForestSt],         // 3 Museum
-  [x100E+24,yForestSt+20],   // 4 Rees Park
-  [xMain,y600N+py(0.06)],    // 5 Arch (matches peach-town-map archY)
-  [x300W+40,yForestSt],      // 6 B&B Billiards
+  [px(0.11),yForestSt],      // 0 Train Depot (833 W Forest — far west)
+  [xMain,yForestSt],         // 1 Secret in Wall (5 N Main)
+  [x300W,yForestSt-20],      // 2 Museum (24 N 300 W)
+  [px(0.13),yForestSt+30],   // 3 Duck Pond (800 W Forest — far west)
+  [xMain,y600N],             // 4 Arch (Main St / UT-13)
+  [xMain-15,yForestSt],      // 5 B&B (21 W Forest)
 ];
 
 function circle(x,y,r,col,alpha=1){g.save();g.globalAlpha=alpha;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fillStyle=col;g.fill();g.restore()}
@@ -223,55 +237,20 @@ g.strokeStyle='#c8b868';g.lineWidth=3;g.stroke();
 g.restore();
 [[px(0.25),py(0.28),100,75,'#98bc58',0.25],[px(0.55),py(0.50),85,65,'#98b450',0.2],[px(0.40),py(0.70),90,60,'#b4d068',0.18],[px(0.20),py(0.60),70,50,'#98bc58',0.18],[px(0.65),py(0.30),75,55,'#b4d068',0.18]].forEach(([cx,cy,rx,ry,col,a])=>{g.save();g.globalAlpha=a;g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.fillStyle=col;g.fill();g.restore()});
 
-// 4. MOUNTAINS — AC style
-g.fillStyle='#7aaa48';g.fillRect(px(0.88),0,W,H);
-g.fillStyle='#88bb52';g.fillRect(px(0.895),0,W,H);
-
-function mtn(cx,tipY,hw){
-  const bot=Math.min(tipY+hw*3.8,H+30);
-  const mid=tipY+hw*1.9;
-  // main body — rounded bezier sides
-  g.beginPath();
-  g.moveTo(cx,tipY);
-  g.bezierCurveTo(cx+hw*.22,tipY+hw*.7,cx+hw*.8,mid,cx+hw,bot);
-  g.lineTo(cx-hw,bot);
-  g.bezierCurveTo(cx-hw*.8,mid,cx-hw*.22,tipY+hw*.7,cx,tipY);
-  g.closePath();
-  g.fillStyle='#8abe56';g.fill();
-  g.strokeStyle='#3a6018';g.lineWidth=2.5;g.stroke();
-  // right shadow face
-  g.beginPath();
-  g.moveTo(cx,tipY);
-  g.bezierCurveTo(cx+hw*.1,tipY+hw*.7,cx+hw*.45,mid,cx+hw,bot);
-  g.lineTo(cx+hw*.05,bot);
-  g.bezierCurveTo(cx+hw*.35,mid,cx+hw*.06,tipY+hw*.75,cx,tipY);
-  g.closePath();
-  g.fillStyle='#5c8c30';g.fill();
-  // redraw outline on top
-  g.beginPath();
-  g.moveTo(cx,tipY);
-  g.bezierCurveTo(cx+hw*.22,tipY+hw*.7,cx+hw*.8,mid,cx+hw,bot);
-  g.lineTo(cx-hw,bot);
-  g.bezierCurveTo(cx-hw*.8,mid,cx-hw*.22,tipY+hw*.7,cx,tipY);
-  g.closePath();
-  g.strokeStyle='#3a6018';g.lineWidth=2.5;g.stroke();
-  // snow blob — round AC-style cap
-  g.beginPath();
-  g.ellipse(cx,tipY+hw*.28,hw*.38,hw*.28,0,0,Math.PI*2);
-  g.fillStyle='#f0f4e8';g.fill();
-  g.strokeStyle='#b8ccaa';g.lineWidth=1.5;g.stroke();
-  // snow highlight dot
-  g.beginPath();
-  g.ellipse(cx-hw*.1,tipY+hw*.2,hw*.1,hw*.08,-.4,0,Math.PI*2);
-  g.fillStyle='rgba(255,255,255,.7)';g.fill();
-}
-
-// back row — smaller, tucked right
-[[px(0.965),py(0.08),16],[px(0.965),py(0.27),15],[px(0.965),py(0.46),16],[px(0.965),py(0.65),15],[px(0.965),py(0.84),14]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
-// front row — taller
-[[px(0.915),py(0.00),28],[px(0.913),py(0.19),30],[px(0.915),py(0.37),28],[px(0.913),py(0.55),29],[px(0.915),py(0.73),27],[px(0.913),py(0.90),24]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
-
-lbl('Wellsville\nMtns',px(0.965),H/2,7.5,'#3a5820');
+// 4. MOUNTAINS — randomized jagged silhouette (peach-town-map style)
+poly([[px(0.90),0],[W,0],[W,H],[px(0.90),H]],'#a0b870');
+const mp1=[[px(0.90),0]];
+for(let yy=0;yy<=H;yy+=32){mp1.push([px(0.90)+rnd(5,28),yy],[px(0.90)+rnd(12,40),yy+16]);}
+mp1.push([W,H],[W,0]);
+poly(mp1,'#90a860');
+const mp2=[[px(0.92),0]];
+for(let yy=0;yy<=H;yy+=24){mp2.push([px(0.92)+rnd(10,38),yy],[px(0.92)+rnd(18,50),yy+12]);}
+mp2.push([W,H],[W,0]);
+poly(mp2,'#a8c078',0.55);
+[[px(0.91)+10,py(0.06)],[px(0.91)+22,py(0.20)],[px(0.91)+12,py(0.36)],
+ [px(0.91)+24,py(0.52)],[px(0.91)+10,py(0.68)],[px(0.91)+20,py(0.84)]
+].forEach(([sx,sy])=>{poly([[sx,sy],[sx-8,sy+18],[sx+10,sy+16]],'rgba(255,255,255,0.65)')});
+lbl('⛰ Wellsville\nMtns',px(0.965),H/2,7.5,'#3a5820');
 
 // 5. WILLARD BAY
 g.save();g.beginPath();g.ellipse(px(0.40),H+16,px(0.22),28,-0.05,0,Math.PI*2);g.fillStyle='#68c4d0';g.fill();g.strokeStyle='#c8f0f8';g.lineWidth=8;g.stroke();g.globalAlpha=0.5;g.strokeStyle='#a0d8e8';g.lineWidth=3;g.stroke();
@@ -392,6 +371,12 @@ const TC=[['#58a028','#3a8018','#70b840'],['#509028','#388018','#68b038'],['#609
 [[px(0.22),py(0.55)],[px(0.38),py(0.60)],[px(0.55),py(0.52)],[px(0.20),py(0.78)],[px(0.45),py(0.82)],[px(0.65),py(0.58)]].forEach(([x,y])=>bush(x,y,0.7));
 [[px(0.25),py(0.42),'#f4d030'],[px(0.40),py(0.38),'#f07090'],[px(0.60),py(0.45),'#a070e0'],[px(0.30),py(0.68),'#f4d030'],[px(0.50),py(0.72),'#f07090'],[px(0.70),py(0.65),'#f4d030']].forEach(([x,y,col])=>flower(x,y,col));
 [[px(0.20),py(0.62)],[px(0.55),py(0.55)],[px(0.38),py(0.74)],[px(0.65),py(0.72)]].forEach(([x,y])=>mushroom(x,y,0.7));
+// extra flowers near buildings — AC maps have flowers everywhere
+[[xMain-12,y700N+28,'#f4d030'],[xMain+28,y700N+26,'#f07090'],[x100W-18,y700N+28,'#a070e0'],[x100W+20,y700N+26,'#f4d030'],
+ [x300W-20,yForestSt-22,'#f07090'],[x300W+12,yForestSt-22,'#90d060'],[x100E-24,yForestSt-22,'#a070e0'],[x100E+50,yForestSt-22,'#f4d030'],
+ [xMain-20,archY+28,'#ffe060'],[xMain+24,archY+28,'#f07090'],[xMain-10,y400N+30,'#a070e0'],[xMain+42,y400N+28,'#f4d030'],
+ [x300W+26,yForestSt-22,'#ffe060'],[x300W+54,yForestSt-22,'#f07090']
+].forEach(([x,y,col])=>flower(x,y,col));
 
 // 14. STREET LABELS
 const ewL=[[y900N,'900 N'],[y800N,'800 N'],[y750N,'750 N'],[y700N,'700 N'],[y600N,'600 N'],[yForestSt,'Forest St'],[y400N,'400 N'],[y325N,'325 N'],[y300N,'300 N']];
@@ -407,10 +392,7 @@ poly([[crx,cry-20],[crx-4,cry-8],[crx,cry-12],[crx+4,cry-8]],'#c0392b');
 poly([[crx,cry+20],[crx-4,cry+8],[crx,cry+12],[crx+4,cry+8]],'#8a7a6a');
 g.restore();lbl('N',crx,cry-12,8,'#c0392b');lbl('S',crx,cry+14,7,'#8a7a6a');lbl('W',crx-12,cry,7,'#8a7a6a');lbl('E',crx+12,cry,7,'#8a7a6a');
 
-// 16. TITLE
-rrect(10,10,162,28,6,'#f5ecd0',0.95);
-g.save();g.strokeStyle='#8b6343';g.lineWidth=2;g.beginPath();g.roundRect(10,10,162,28,6);g.stroke();g.restore();
-lbl('🍑 Peach Town',91,24,11,'#3a2415');
+// 16. (title now in HTML header)
 } // end drawMap
 
 // ─────────────────────────────────────────────
@@ -452,7 +434,7 @@ document.fonts.ready.then(()=>{
 
   const fogLayers=STOPS.map((s,i)=>{
     const [cx,cy]=SXY[i];
-    const wr=i===0?80:50, hr=i===0?30:42;
+    const wr=50, hr=42;
     const sw=toLL(cx-wr,cy+hr),ne=toLL(cx+wr,cy-hr);
     return L.svgOverlay(makeFog(wr*2,hr*2,s.icon+' ???'),L.latLngBounds(sw,ne),{interactive:false,pane:'fogPane'}).addTo(map);
   });
@@ -473,7 +455,7 @@ document.fonts.ready.then(()=>{
   STOPS.forEach((s,i)=>{
     const d=document.createElement('div');
     d.className='sc';d.id='sc'+i;d.style.animationDelay=(i*.05)+'s';
-    d.innerHTML=`<div class="ch" onclick="tc(${i})"><div class="cb"></div><div class="ci">${s.icon}</div><div style="flex:1;min-width:0"><div class="cn">${s.name}</div><div class="ct">${s.tag}</div></div><div class="cv">▼</div></div><div class="cd"><div class="cdi"><p class="cdesc">${s.desc}</p><div class="tb"><div class="tl">✨ task</div><div class="tx">${s.task}</div></div><button class="gb" onclick="mv(${i});event.stopPropagation()">✓ i visited this spot!</button><div class="um">${s.unlock}</div></div></div>`;
+    d.innerHTML=`<div class="ch" onclick="tc(${i})"><div class="cb"></div><div class="ci">${s.icon}</div><div style="flex:1;min-width:0"><div class="cn">${s.name}</div><div class="ct">${s.tag}</div></div><div class="cv">▼</div></div><div class="cd"><div class="cdi"><p class="cdesc">${s.desc}</p>${s.task?`<div class="tb"><div class="tl">✨ task</div><div class="tx">${s.task}</div></div>`:''}<button class="gb" onclick="mv(${i});event.stopPropagation()">✓ i visited this spot!</button><div class="um">${s.unlock}</div></div></div>`;
     list.appendChild(d);
   });
 
@@ -497,6 +479,8 @@ document.fonts.ready.then(()=>{
   window.tc=function(i){const el=document.getElementById('sc'+i),was=el.classList.contains('open');document.querySelectorAll('.sc').forEach(e=>e.classList.remove('open'));if(!was)el.classList.add('open')};
   window.togglePanel=function(){panelOpen=!panelOpen;document.getElementById('panel').classList.toggle('open',panelOpen);document.getElementById('pa').textContent=panelOpen?'▼':'▲'};
 
+  const hdrH=document.getElementById('header').offsetHeight;
+  document.getElementById('toast').style.top=(hdrH+10)+'px';
   setTimeout(()=>toast('oh my goodness, happy 30th birthday, camilla!! 🎉 shall we explore peach town today?'),800);
   document.getElementById('pb').addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
   document.getElementById('pb').addEventListener('touchmove',e=>e.stopPropagation(),{passive:true});
