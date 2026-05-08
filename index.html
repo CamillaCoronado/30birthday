@@ -223,33 +223,53 @@ g.strokeStyle='#c8b868';g.lineWidth=3;g.stroke();
 g.restore();
 [[px(0.25),py(0.28),100,75,'#98bc58',0.25],[px(0.55),py(0.50),85,65,'#98b450',0.2],[px(0.40),py(0.70),90,60,'#b4d068',0.18],[px(0.20),py(0.60),70,50,'#98bc58',0.18],[px(0.65),py(0.30),75,55,'#b4d068',0.18]].forEach(([cx,cy,rx,ry,col,a])=>{g.save();g.globalAlpha=a;g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);g.fillStyle=col;g.fill();g.restore()});
 
-// 4. MOUNTAINS — illustrated AC style
-// base fill
-g.fillStyle='#8aaa54';g.fillRect(px(0.88),0,W,H);
-g.fillStyle='#96b660';g.fillRect(px(0.92),0,W,H);
+// 4. MOUNTAINS — AC style
+g.fillStyle='#7aaa48';g.fillRect(px(0.88),0,W,H);
+g.fillStyle='#88bb52';g.fillRect(px(0.895),0,W,H);
 
 function mtn(cx,tipY,hw){
-  // left face (lighter)
-  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx-hw,Math.min(tipY+hw*4,H+20));g.lineTo(cx,Math.min(tipY+hw*2.2,H+20));g.closePath();g.fillStyle='#9cb864';g.fill();
-  // right face (darker)
-  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx+hw,Math.min(tipY+hw*4,H+20));g.lineTo(cx,Math.min(tipY+hw*2.2,H+20));g.closePath();g.fillStyle='#7a9844';g.fill();
-  // centre ridge
-  g.beginPath();g.moveTo(cx,tipY);g.lineTo(cx-hw*.08,Math.min(tipY+hw*4,H+20));g.lineTo(cx+hw*.08,Math.min(tipY+hw*4,H+20));g.closePath();g.fillStyle='#88aa50';g.fill();
-  // snow cap
-  const sB=tipY+hw*.6;
-  g.beginPath();g.moveTo(cx,tipY-3);
-  g.bezierCurveTo(cx+hw*.28,tipY+hw*.12,cx+hw*.24,sB,cx+hw*.14,sB+5);
-  g.lineTo(cx-hw*.14,sB+5);
-  g.bezierCurveTo(cx-hw*.24,sB,cx-hw*.28,tipY+hw*.12,cx,tipY-3);
-  g.closePath();g.fillStyle='rgba(255,255,255,.84)';g.fill();
-  // snow highlight
-  g.beginPath();g.moveTo(cx,tipY-3);g.bezierCurveTo(cx-hw*.08,tipY+hw*.08,cx-hw*.1,tipY+hw*.22,cx-hw*.06,tipY+hw*.28);g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=2;g.stroke();
+  const bot=Math.min(tipY+hw*3.8,H+30);
+  const mid=tipY+hw*1.9;
+  // main body — rounded bezier sides
+  g.beginPath();
+  g.moveTo(cx,tipY);
+  g.bezierCurveTo(cx+hw*.22,tipY+hw*.7,cx+hw*.8,mid,cx+hw,bot);
+  g.lineTo(cx-hw,bot);
+  g.bezierCurveTo(cx-hw*.8,mid,cx-hw*.22,tipY+hw*.7,cx,tipY);
+  g.closePath();
+  g.fillStyle='#8abe56';g.fill();
+  g.strokeStyle='#3a6018';g.lineWidth=2.5;g.stroke();
+  // right shadow face
+  g.beginPath();
+  g.moveTo(cx,tipY);
+  g.bezierCurveTo(cx+hw*.1,tipY+hw*.7,cx+hw*.45,mid,cx+hw,bot);
+  g.lineTo(cx+hw*.05,bot);
+  g.bezierCurveTo(cx+hw*.35,mid,cx+hw*.06,tipY+hw*.75,cx,tipY);
+  g.closePath();
+  g.fillStyle='#5c8c30';g.fill();
+  // redraw outline on top
+  g.beginPath();
+  g.moveTo(cx,tipY);
+  g.bezierCurveTo(cx+hw*.22,tipY+hw*.7,cx+hw*.8,mid,cx+hw,bot);
+  g.lineTo(cx-hw,bot);
+  g.bezierCurveTo(cx-hw*.8,mid,cx-hw*.22,tipY+hw*.7,cx,tipY);
+  g.closePath();
+  g.strokeStyle='#3a6018';g.lineWidth=2.5;g.stroke();
+  // snow blob — round AC-style cap
+  g.beginPath();
+  g.ellipse(cx,tipY+hw*.28,hw*.38,hw*.28,0,0,Math.PI*2);
+  g.fillStyle='#f0f4e8';g.fill();
+  g.strokeStyle='#b8ccaa';g.lineWidth=1.5;g.stroke();
+  // snow highlight dot
+  g.beginPath();
+  g.ellipse(cx-hw*.1,tipY+hw*.2,hw*.1,hw*.08,-.4,0,Math.PI*2);
+  g.fillStyle='rgba(255,255,255,.7)';g.fill();
 }
 
-// back row — smaller, offset right
-[[px(0.95),py(0.10),18],[px(0.95),py(0.30),17],[px(0.95),py(0.50),18],[px(0.95),py(0.70),17],[px(0.95),py(0.88),16]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
-// front row — taller, along left edge of mountain zone
-[[px(0.91)+4,py(0.02),26],[px(0.91)+2,py(0.20),28],[px(0.91)+5,py(0.38),26],[px(0.91)+3,py(0.56),27],[px(0.91)+4,py(0.74),25],[px(0.91)+2,py(0.90),22]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
+// back row — smaller, tucked right
+[[px(0.965),py(0.08),16],[px(0.965),py(0.27),15],[px(0.965),py(0.46),16],[px(0.965),py(0.65),15],[px(0.965),py(0.84),14]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
+// front row — taller
+[[px(0.915),py(0.00),28],[px(0.913),py(0.19),30],[px(0.915),py(0.37),28],[px(0.913),py(0.55),29],[px(0.915),py(0.73),27],[px(0.913),py(0.90),24]].forEach(([cx,ty,hw])=>mtn(cx,ty,hw));
 
 lbl('Wellsville\nMtns',px(0.965),H/2,7.5,'#3a5820');
 
